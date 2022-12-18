@@ -1,7 +1,3 @@
-[submodule "lkl"]
-	path = lkl
-	url = https://github.com/lsds/lkl.git
-	branch = upstream-refactor
 [submodule "host-musl"]
 	path = host-musl
 	url = https://github.com/lsds/musl.git
