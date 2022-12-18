@@ -90,7 +90,7 @@ sudo apt-get install make gcc g++ bc python xutils-dev bison flex libgcrypt20-de
 
 2. Clone the SGX-LKL git repository:
 ```
-git clone --branch oe_port --recursive https://github.com/lsds/sgx-lkl.git
+git clone --branch oe_port --recursive --shallow-submodules https://github.com/lsds/sgx-lkl.git
 cd sgx-lkl
 ```
 
@@ -138,7 +138,7 @@ as attestestation.
 
 To build SGX-LKL in release mode, run:
 ```
-    make RELEASE=true
+make RELEASE=true
 ```
 
 5. To install SGX-LKL on the host system, use the following command:
