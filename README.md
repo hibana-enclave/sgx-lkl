@@ -90,7 +90,7 @@ sudo apt-get install make gcc g++ bc python xutils-dev bison flex libgcrypt20-de
 
 2. Clone the SGX-LKL git repository:
 ```
-git clone --branch oe_port --recursive --shallow-submodules https://github.com/lsds/sgx-lkl.git
+git clone --branch oe_port --recursive --shallow-submodules https://github.com/sgx-strongbox/sgx-lkl.git
 cd sgx-lkl
 ```
 
