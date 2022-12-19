@@ -2,15 +2,6 @@
 	path = host-musl
 	url = https://github.com/lsds/musl.git
 	shallow = true
-[submodule "sgx-lkl-musl"]
-	path = sgx-lkl-musl
-	url = https://github.com/lsds/sgx-lkl-musl.git
-	branch = oe_port
-	shallow = true
-[submodule "openenclave"]
-	path = openenclave
-	url = https://github.com/openenclave/openenclave.git
-	branch = feature/sgx-lkl-support
 [submodule "third_party/argon2"]
 	path = third_party/argon2
 	url = https://github.com/P-H-C/phc-winner-argon2
