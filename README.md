@@ -93,11 +93,7 @@ sudo apt-get install make gcc g++ bc python xutils-dev bison flex libgcrypt20-de
 git clone --branch oe_port https://github.com/sgx-strongbox/sgx-lkl.git
 cd sgx-lkl
 git submodule init
-git submodule update host-musl --progress
-git submodule update lkl --progress
-git submodule update ltp --progress
-git submodule update openenclave --progress
-git submodule update sgx-lkl-musl --progress
+git submodule update --progress
 ```
 
 3. Install the Open Enclave build dependencies:
