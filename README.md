@@ -94,7 +94,7 @@ git clone --branch oe_port https://github.com/sgx-strongbox/sgx-lkl.git
 cd sgx-lkl
 git submodule init
 git submodule update host-musl --progress
-git submodule update lkl --depth=1 --progress
+git submodule update lkl --progress
 git submodule update ltp --progress
 git submodule update openenclave --progress
 git submodule update sgx-lkl-musl --progress
