@@ -60,8 +60,9 @@ sgx-lkl-setup
 
 Build the SGX-LKL rootfs disk image and run the `read_secret` program inside an enclave:
 ```sh
-sgx-lkl-disk create --docker=attackme --size 5M --encrypt --key-file rootfs.img
-SGXLKL_HD_KEY=rootfs.img.key sgx-lkl-run-oe --hw-debug rootfs.img /read_secret
+/opt/sgx-lkl/bin/sgx-lkl-disk create --docker=attackme --size 5M --encrypt --key-file rootfs.img
+SGXLKL_HD_KEY=rootfs.img.key sudo /opt/sgx-lkl/bin/sgx-lkl-run-oe --hw-debug rootfs.img /read_secret
+
 # Ready to be attacked...
 # Press any key to exit
 ```
