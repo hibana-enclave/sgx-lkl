@@ -98,6 +98,7 @@ git submodule update --progress
 
 3. Install the Open Enclave build dependencies:
 ```
+sudo apt-get install python3-setuptools
 python3 -m pip install --upgrade pip
 cd openenclave
 sudo scripts/ansible/install-ansible.sh
