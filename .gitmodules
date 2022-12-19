@@ -1,10 +1,12 @@
 [submodule "host-musl"]
 	path = host-musl
 	url = https://github.com/lsds/musl.git
+	shallow = true
 [submodule "sgx-lkl-musl"]
 	path = sgx-lkl-musl
 	url = https://github.com/lsds/sgx-lkl-musl.git
 	branch = oe_port
+	shallow = true
 [submodule "openenclave"]
 	path = openenclave
 	url = https://github.com/openenclave/openenclave.git
@@ -20,3 +22,4 @@
 [submodule "lkl"]
 	path = lkl
 	url = https://github.com/lsds/lkl.git
+	shallow = true
