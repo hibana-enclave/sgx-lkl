@@ -181,8 +181,8 @@ uninstall:
 	rm -f $(PREFIX)/bin/sgx-lkl-gdb
 	rm -rf $(PREFIX)/lib/gdb
 	rm -rf $(PREFIX)/share/schemas
-	rmdir $(PREFIX)/bin $(PREFIX)/lib $(PREFIX)/tools $(PREFIX)/share
-	rmdir $(PREFIX)
+	rm -rf $(PREFIX)/bin $(PREFIX)/lib $(PREFIX)/tools $(PREFIX)/share
+	rm -rf $(PREFIX)
 
 builddirs:
 	mkdir -p $(SGXLKL_GILBC_BDIR)
