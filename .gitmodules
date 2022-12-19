@@ -17,3 +17,6 @@
 	path = ltp
 	url = https://github.com/lsds/ltp.git
 	branch= sgx-lkl
+[submodule "lkl"]
+	path = lkl
+	url = https://github.com/lsds/lkl.git
