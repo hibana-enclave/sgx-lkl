@@ -122,6 +122,12 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 /**************************************************************************************************************************/
 
+static long long aex_count = 0; 
+
+void aep_callback_cb(){
+    aex_count++; 
+}
+
 static void version()
 {
     printf(
@@ -1952,6 +1958,9 @@ int main(int argc, char* argv[], char* envp[])
     sgxlkl_host_verbose("oe_create_enclave...\n");
     _create_enclave(libsgxlkl, libsgxlkl_user, oe_flags, &oe_enclave);
 
+    /* StrongBox: register AEP pointer after creating an enclave */
+    register_aep_cb(aep_callback_cb);
+
     /* Perform host interface initialization */
     sgxlkl_host_interface_initialization();
 
@@ -2118,5 +2127,8 @@ int main(int argc, char* argv[], char* envp[])
         "SGX-LKL-OE exit: exited_ethread_count=%i exit_status=%i\n",
         exited_ethread_count,
         exit_status);
+    
+    printf("\n\n\nAEX count = %ld\n", aex_count); 
+
     return exit_status;
 }
