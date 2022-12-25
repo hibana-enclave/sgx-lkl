@@ -1,6 +1,13 @@
 SGX-LKL-OE (Open Enclave Edition)
 =================================
 
+To be added as submodules, 
+
+- [ ] https://github.com/sgx-strongbox/sgx-step 
+- [ ] https://github.com/sgx-strongbox/sgx-lkl-musl
+- [ ] https://github.com/sgx-strongbox/openenclave
+
+
 *WARNING:* This branch contains an experimental port of SGX-LKL to use Open Enclave as an enclave abstraction layer.
 This is an ongoing research project.
 Various features are under development and there are several known bugs.
@@ -32,49 +39,6 @@ SGX-LKL can be run in hardware mode, when it requires an Intel SGX compatible
 CPU, and also in software simulation mode, when it runs on any Intel CPU
 without hardware security guarantees. 
 
-A. Installing SGX-LKL-OE
-------------------------
-
-SGX-LKL-OE is distributed as Debian package.
-This package is alpha quality and not meant for production.
-
-The SGX-LKL-OE package contains the runtime, tools, and all its dependencies
-and can be run on any Linux distribution.
-
-To use development releases (updated on every commit to `master`), run:
-```sh
-echo "deb [trusted=yes] https://clcpackages.blob.core.windows.net/apt-dev/1fa5fb889b8efa6ea07354c3b54903f7 ./" | sudo tee /etc/apt/sources.list.d/azure-clc.list
-```
-
-To use stable releases (manually published), run:
-```sh
-echo "deb [trusted=yes] https://clcpackages.blob.core.windows.net/apt/1fa5fb889b8efa6ea07354c3b54903f7 ./" | sudo tee /etc/apt/sources.list.d/azure-clc.list
-```
-
-Now, install with:
-```sh
-sudo apt update
-# or: sgx-lkl-nonrelease (-release variant will follow)
-sudo apt install sgx-lkl-debug
-```
-
-To make the SGX-LKL commands available from any directory, add an entry to 
-the `PATH` environment variable:
-```
-PATH="$PATH:/opt/sgx-lkl/bin"
-```
-
-Finally, setup the host environment by running:
-```
-sgx-lkl-setup
-```
-
-SGX-LKL works most performant with a Linux kernel that has support for userspace FSGSBASE instructions. Otherwise, support for thread local storage (TLS) must use emulated instructions, which reduces performance.
-SGX-LKL outputs a message on start-up if the currently running Linux kernel does not support FSGSBASE instructions.
-
-FSGSBASE support is not part of the mainline Linux kernel yet.
-Azure VMs run on Linux kernels [with FSGSBASE support](https://bugs.launchpad.net/ubuntu/+source/linux-azure/+bug/1877425) based on a proposed Linux kernel patch.
-To apply the latest patch version to non-Azure systems you may follow the instructions [here](tools/ubuntu-patched-kernel-fsgsbase).
 
 B. Building SGX-LKL-OE from source
 ----------------------------------
@@ -90,8 +54,10 @@ sudo apt-get install make gcc g++ bc python xutils-dev bison flex libgcrypt20-de
 
 2. Clone the SGX-LKL git repository:
 ```
-git clone --branch oe_port --recursive https://github.com/lsds/sgx-lkl.git
+git clone https://github.com/sgx-strongbox/sgx-lkl.git
 cd sgx-lkl
+git submodule init
+git submodule update --progress
 ```
 
 3. Install the Open Enclave build dependencies:
@@ -102,6 +68,13 @@ sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
 
 Note that the above also installs the Intel SGX driver on the host.
+
+If running on machines offer SGX 1 support, the last line above should be 
+replaced by: 
+
+```
+sudo ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
+```
 
 If running on an Azure Confidential Computing (ACC) VM, which offers SGX support,
 the last line above should be replaced by:
