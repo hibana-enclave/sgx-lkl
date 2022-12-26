@@ -47,7 +47,7 @@
 #include "host/host_device_ifc.h"
 #include "host/sgxlkl_u.h"
 
-#include "enclave.h"
+#include "libsgxstep/enclave.h"
 
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
