@@ -85,13 +85,21 @@ sudo ansible-playbook scripts/ansible/oe-contributors-acc-setup-no-driver.yml
 
 4. Build SGX-LKL in the source tree:
 
+Some environment variables 
+
+```
+source env.sh
+```
+
 #### DEBUG build (with debug functionality, no compiler optimisations)
 
 To build SGX-LKL with debug symbols and without compiler optimisations, run the following 
 command in the SGX-LKL source tree
+
 ```
-make DEBUG=true
+sudo -E make DEBUG=true
 ```
+
 Note that, on the first invocation, this initialises all git submodules, 
 including a clone of the LKL library, which downloads several GBs of data.
 
@@ -101,7 +109,7 @@ You will then find the build files under `build/`.
 
 To build SGX-LKL with compiler optimisations and without debug symbols, run:
 ```
-make
+sudo -E make
 ```
 
 #### RELEASE build _(not yet supported by SGX-LKL-OE)_
