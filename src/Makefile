@@ -2,8 +2,8 @@ include ../config.mak
 
 LIB_SGXLKL_BUILD ?= $(BUILD_DIR)
 
-SGX_STEP_INCLUDE=/home/nelly/sgx-lkl/sgx-step
-SGX_STEP_LIB=/home/nelly/sgx-lkl/sgx-step/libsgxstep/libsgx-step.a
+SGX_STEP_INCLUDE=$(SGX_STEP_HOME)
+SGX_STEP_LIB=$(SGX_STEP_HOME)/libsgxstep/libsgx-step.a
 
 srcdir = ${SGXLKL_ROOT}/src
 musl_srcdir = $(SGXLKL_LIBC_SRC_DIR)/src
