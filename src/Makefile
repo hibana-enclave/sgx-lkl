@@ -2,8 +2,8 @@ include ../config.mak
 
 LIB_SGXLKL_BUILD ?= $(BUILD_DIR)
 
-SGX_STEP_INCLUDE=$(SGX_STEP_HOME)
-SGX_STEP_LIB=$(SGX_STEP_HOME)/libsgx-step.a
+SGX_STEP_INCLUDE=/home/nelly/sgx-lkl/sgx-step/libsgxstep
+SGX_STEP_LIB=/home/nelly/sgx-lkl/sgx-step/libsgxstep/libsgx-step.a
 
 srcdir = ${SGXLKL_ROOT}/src
 musl_srcdir = $(SGXLKL_LIBC_SRC_DIR)/src
@@ -14,7 +14,7 @@ CROSS_COMPILE =
 RANLIB  = $(CROSS_COMPILE)ranlib
 
 # TODO remove -Wno-error flags
-CFLAGS_MAIN = -I$(SGX_STEP_INCLUDE) -I$(OE_SDK_INCLUDES) -Wall -Werror -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=strict-aliasing
+CFLAGS_MAIN = -I$(OE_SDK_INCLUDES) -I$(SGX_STEP_INCLUDE) -Wall -Werror -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=strict-aliasing
 CFLAGS_MAIN += -DOE_WITH_EXPERIMENTAL_EEID -I$(srcdir)/libjson/include -I$(LIB_SGXLKL_BUILD)/config
 # TODO add -nostdinc after relayering work complete
 #      cannot use -nostdinc currently as stdatomic.h is included which is missing

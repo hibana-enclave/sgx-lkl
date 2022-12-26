@@ -47,6 +47,8 @@
 #include "host/host_device_ifc.h"
 #include "host/sgxlkl_u.h"
 
+#include "enclave.h"
+
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
 #elif defined(SGXLKL_RELEASE)
@@ -2128,7 +2130,7 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
     
-    printf("\n\n\nAEX count = %ld\n", aex_count); 
+    printf("\n\n\nAEX count = %lld\n", aex_count); 
 
     return exit_status;
 }
