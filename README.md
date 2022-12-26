@@ -63,6 +63,7 @@ git submodule update --progress
 3. Install the Open Enclave build dependencies:
 ```
 cd openenclave
+sudo -H pip3 install --upgrade pip
 sudo scripts/ansible/install-ansible.sh
 sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
