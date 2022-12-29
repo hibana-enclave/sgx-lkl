@@ -47,7 +47,9 @@
 #include "host/host_device_ifc.h"
 #include "host/sgxlkl_u.h"
 
+#include <sys/syscall.h>
 #include "openenclave/host.h"
+#include "libsgxstep/enclave.h"
 
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
@@ -123,6 +125,10 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
+
+void aep_callback(void){
+    printf(" (( CALLBACK )) Hello World ! \n"); 
+}
 
 
 static void version()
@@ -2059,6 +2065,12 @@ int main(int argc, char* argv[], char* envp[])
             pthread_attr_setaffinity_np(&eattr, sizeof(set), &set);
         }
 
+
+        // printf("\n==================\nethered id = %d\n", i); 
+        // pid_t tid = syscall(__NR_gettid);
+        // printf(" >>>>> --- thread id = %d, cb = %p --- <<<<< \n", tid, aep_callback); 
+        register_aep_cb(aep_callback);
+
         ethreads_args[i].ethread_id = i;
         ethreads_args[i].shm = &sgxlkl_host_state.shared_memory;
         ethreads_args[i].oe_enclave = oe_enclave;
@@ -2122,7 +2134,7 @@ int main(int argc, char* argv[], char* envp[])
         exit_status);
     
     
-    sgx_step_show_aex_count();
+    sgx_step_print_aex_count();
 
     return exit_status;
 }
