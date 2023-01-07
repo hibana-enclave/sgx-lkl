@@ -2,6 +2,8 @@
 
 ## Install Docker 
 
+<https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04>
+
 ```sh
 # 
 sudo apt update
@@ -16,6 +18,8 @@ sudo systemctl status docker
 ```
 
 ## Docker without Root Permission 
+
+<https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo/1293601#1293601>
 
 ```sh
 sudo groupadd docker
