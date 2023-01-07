@@ -61,11 +61,11 @@ cd sgx-lkl
 # download lkl, ltp and host-musl 
 git submodule init
 git submodule update --progress
-# download sgx-lkl-musl
+# sgx-lkl-musl
 git clone --branch strongbox https://github.com/hibana-enclave/sgx-lkl-musl
-# download openenclave https://github.com/hibana-enclave/sgx-lkl
+# openenclave
 git clone --branch strongbox --recursive https://github.com/hibana-enclave/openenclave 
-# download sgx-step 
+# sgx-step 
 git clone --branch strongbox https://github.com/hibana-enclave/sgx-step
 ```
 
