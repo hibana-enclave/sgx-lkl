@@ -49,6 +49,9 @@ CFLAGS_SGXLKL_ALL += $(SGXLKL_INCLUDES) -isystem $(E2FSPROGS_BUILD)/include -isy
 
 # -----------------------------------------------------------------------------------------
 
+$(SGX_STEP_LIB)/libsgx-step.a:  
+	$(MAKE) -C $(SGX_STEP_HOME)/libsgxstep all 
+
 all: builddirs $(SGXLKL_RUN_TARGET) $(SGXLKL_STATIC_LIB)
 
 $(SGXLKL_RUN_TARGET): builddirs $(LIB_SGXLKL_BUILD)/$(SGXLKL_RUN_TARGET)
