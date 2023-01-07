@@ -65,7 +65,7 @@ sudo scripts/ansible/install-ansible.sh
 sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
 
-> **Note**: that the above also installs the Intel SGX driver on the host.
+> **Note**: that the above also installs the Intel SGX driver (DCAP driver) on the host.
 
 If running on machines offer SGX 1 support (using `isgx` driver instead of dcap driver `intel_sgx`), the last line above should be 
 replaced by: 
