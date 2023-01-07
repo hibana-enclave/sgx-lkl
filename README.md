@@ -7,6 +7,7 @@ To be added as submodules,
 - [ ] https://github.com/sgx-strongbox/sgx-lkl-musl  --> `sgx-lkl-musl`
 - [ ] https://github.com/sgx-strongbox/openenclave   --> `openenclave`
 
+---
 
 *WARNING:* This branch contains an experimental port of SGX-LKL to use Open Enclave as an enclave abstraction layer.
 This is an ongoing research project.
