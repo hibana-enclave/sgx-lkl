@@ -1,4 +1,4 @@
-SGX-LKL-OE (Open Enclave Edition)
+# SGX-LKL-OE (Open Enclave Edition)
 =================================
 
 To be added as submodules, 
@@ -44,20 +44,20 @@ CPU, and also in software simulation mode, when it runs on any Intel CPU
 without hardware security guarantees. 
 
 
-B. Building SGX-LKL-OE from source
+## B. Building SGX-LKL-OE from source
 ----------------------------------
 
 SGX-LKL has been tested on Ubuntu Linux 18.04 and with a gcc compiler
 version of 7.4 or above. Older compiler versions may lead to compilation
 and/or linking errors.
 
-1. Install the SGX-LKL build dependencies:
-```
+### 1. Install the SGX-LKL build dependencies:
+```sh
 sudo apt-get install make gcc g++ bc python xutils-dev bison flex libgcrypt20-dev libjson-c-dev automake autopoint autoconf pkgconf libtool libcurl4-openssl-dev libprotobuf-dev libprotobuf-c-dev protobuf-compiler protobuf-c-compiler libssl-dev
 ```
 
-2. Clone the SGX-LKL git repository:
-```
+### 2. Clone the SGX-LKL git repository:
+```sh
 git clone https://github.com/hibana-enclave/sgx-lkl.git
 cd sgx-lkl
 # download lkl, ltp and host-musl 
@@ -71,8 +71,8 @@ git clone --branch strongbox --recursive https://github.com/hibana-enclave/opene
 git clone --branch strongbox https://github.com/hibana-enclave/sgx-step
 ```
 
-3. Install the Open Enclave build dependencies:
-```
+### 3. Install the Open Enclave build dependencies:
+```sh
 cd openenclave
 sudo -H pip3 install --upgrade pip
 sudo scripts/ansible/install-ansible.sh
@@ -84,23 +84,23 @@ Note that the above also installs the Intel SGX driver on the host.
 If running on machines offer SGX 1 support, the last line above should be 
 replaced by: 
 
-```
+```sh
 sudo ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
 ```
 
 If running on an Azure Confidential Computing (ACC) VM, which offers SGX support,
 the last line above should be replaced by:
-```
+```sh
 sudo ansible-playbook scripts/ansible/oe-contributors-acc-setup-no-driver.yml
 ```
 
-4. Build SGX-LKL in the source tree:
+Then setup some environment variables 
 
-Some environment variables 
-
-```
+```sh
 source env.sh
 ```
+
+### 4. Build SGX-LKL in the source tree:
 
 #### DEBUG build (with debug functionality, no compiler optimisations)
 
@@ -134,7 +134,7 @@ To build SGX-LKL in release mode, run:
     make RELEASE=true
 ```
 
-5. To install SGX-LKL on the host system, use the following command:
+### 5. To install SGX-LKL on the host system, use the following command:
 ```
 sudo -E make install
 ```
@@ -153,13 +153,13 @@ sudo make uninstall
 This removes SGX-LKL specific artefacts from the installation directory as
 well as cached artefacts of `sgx-lkl-disk` (stored in `~/.cache/sgxlkl`).
 
-6. To make the SGX-LKL commands available from any directory, add an entry to 
+### 6. To make the SGX-LKL commands available from any directory, add an entry to 
 the `PATH` environment variable:
 ```
 PATH="$PATH:/opt/sgx-lkl/bin"
 ```
 
-7. Finally, setup the host environment by running:
+### 7. Finally, setup the host environment by running:
 ```
 sgx-lkl-setup
 ```
@@ -167,7 +167,7 @@ sgx-lkl-setup
 This has to be done after each reboot. It configures the host networking to 
 forward packets from SGX-LKL instances.
 
-C. Running applications with SGX-LKL
+## C. Running applications with SGX-LKL
 ------------------------------------
 
 To run applications with SGX-LKL, they must be provided as part of a 
@@ -403,7 +403,7 @@ does not support the `fork()` system call, so multi-process applications will no
 sgx-lkl-run-oe --hw-debug ./sgxlkl-miniroot-fs.img /bin/ls /usr/bin
 ```
 
-E. Configuring SGX-LKL-OE parameters
+## E. Configuring SGX-LKL-OE parameters
 ------------------------------------
 
 ### 1. Enclave size
@@ -426,12 +426,12 @@ sgx-lkl-run-oe --help
 Note that for the debugging options to have an effect, SGX-LKL must be built
 with `DEBUG=true`.
 
-F. Remote attestation
+## F. Remote attestation
 ---------------------
 
 _To be added_
 
-G. Debugging SGX-LKL-OE and applications
+## G. Debugging SGX-LKL-OE and applications
 -----------------------------------------
 
 See the [Debugging](docs/Debugging.md) page for details.
