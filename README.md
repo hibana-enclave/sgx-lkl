@@ -79,18 +79,14 @@ sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 
 > **Note**: that the above also installs the Intel SGX driver on the host.
 
-If running on machines offer SGX 1 support, the last line above should be 
+If running on machines offer SGX 1 support (using `isgx` driver instead of dcap driver `intel_sgx`), the last line above should be 
 replaced by: 
 
 ```sh
 sudo ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
 ```
 
-If running on an Azure Confidential Computing (ACC) VM, which offers SGX support,
-the last line above should be replaced by:
-```sh
-sudo ansible-playbook scripts/ansible/oe-contributors-acc-setup-no-driver.yml
-```
+> **Note**: from linux kernel 5.11, the SGX patches are merged into the mainline kernel. It is recommended to use in-kernel driver `sgx_enclave` in newer Ubuntu distribution. The out-of-tree sgx driver `isgx` and dcap `intel_sgx` will be deprecated. As the testing operating system is Ubuntu 18, the dcap driver will be used here. 
 
 Then setup some environment variables 
 
