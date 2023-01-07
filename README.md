@@ -113,7 +113,7 @@ as attestestation.
 
 To build SGX-LKL in release mode, run:
 ```
-    make RELEASE=true
+make RELEASE=true
 ```
 
 ### 5. To install SGX-LKL on the host system, use the following command:
