@@ -44,7 +44,6 @@ without hardware security guarantees.
 
 
 ## B. Building SGX-LKL-OE from source
-----------------------------------
 
 SGX-LKL has been tested on Ubuntu Linux 18.04 and with a gcc compiler
 version of 7.4 or above. Older compiler versions may lead to compilation
@@ -167,7 +166,6 @@ This has to be done after each reboot. It configures the host networking to
 forward packets from SGX-LKL instances.
 
 ## C. Running applications with SGX-LKL
-------------------------------------
 
 To run applications with SGX-LKL, they must be provided as part of a 
 Linux disk image. Since SGX-LKL is built using the musl libc library, 
@@ -403,7 +401,6 @@ sgx-lkl-run-oe --hw-debug ./sgxlkl-miniroot-fs.img /bin/ls /usr/bin
 ```
 
 ## E. Configuring SGX-LKL-OE parameters
-------------------------------------
 
 ### 1. Enclave size
 
@@ -426,7 +423,6 @@ Note that for the debugging options to have an effect, SGX-LKL must be built
 with `DEBUG=true`.
 
 ## F. Remote attestation
----------------------
 
 _To be added_
 
