@@ -10,7 +10,7 @@ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubun
 
 # 
 sudo apt update
-apt-cache policy docker-ce
+# apt-cache policy docker-ce
 
 # 
 sudo apt install docker-ce
@@ -25,4 +25,8 @@ sudo groupadd docker
 sudo usermod -aG docker $USER
 sudo chown root:docker /var/run/docker.sock
 sudo chown -R root:docker /var/run/docker
+```
+
+```sh
+docker run hello-world
 ```
