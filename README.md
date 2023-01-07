@@ -76,13 +76,14 @@ sudo ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
 
 > **Note**: from linux kernel 5.11, the SGX patches are merged into the mainline kernel. It is recommended to use in-kernel driver `sgx_enclave` in newer Ubuntu distribution. The out-of-tree sgx driver `isgx` and dcap driver `intel_sgx` will be deprecated. As the testing operating system is Ubuntu 18, the dcap driver or out-of-tree driver will be used here. 
 
-Then setup some environment variables 
+
+### 4. Build SGX-LKL in the source tree:
+
+Before building the SGX-LKL, setup some environment variables 
 
 ```sh
 source oe-env.sh
 ```
-
-### 4. Build SGX-LKL in the source tree:
 
 #### DEBUG build (with debug functionality, no compiler optimisations)
 
