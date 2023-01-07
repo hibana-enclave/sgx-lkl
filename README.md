@@ -3,9 +3,12 @@ SGX-LKL-OE (Open Enclave Edition)
 
 To be added as submodules, 
 
-- [ ] https://github.com/sgx-strongbox/sgx-step      --> `sgx-step`
-- [ ] https://github.com/sgx-strongbox/sgx-lkl-musl  --> `sgx-lkl-musl`
-- [ ] https://github.com/sgx-strongbox/openenclave   --> `openenclave`
+- [ ] https://github.com/hibana-enclave/sgx-step      --> `sgx-step`
+- [ ] https://github.com/hibana-enclave/sgx-lkl-musl  --> `sgx-lkl-musl`
+
+Openenclave itself has several submodules, 
+
+- [ ] https://github.com/hibana-enclave/openenclave   --> `openenclave`
 
 ---
 
@@ -55,10 +58,17 @@ sudo apt-get install make gcc g++ bc python xutils-dev bison flex libgcrypt20-de
 
 2. Clone the SGX-LKL git repository:
 ```
-git clone https://github.com/sgx-strongbox/sgx-lkl.git
+git clone https://github.com/hibana-enclave/sgx-lkl.git
 cd sgx-lkl
+# download lkl, ltp and host-musl 
 git submodule init
 git submodule update --progress
+# download sgx-lkl-musl
+git clone --branch strongbox https://github.com/hibana-enclave/sgx-lkl-musl
+# download openenclave https://github.com/hibana-enclave/sgx-lkl
+git clone --branch strongbox --recursive https://github.com/hibana-enclave/openenclave 
+# download sgx-step 
+git clone --branch strongbox https://github.com/hibana-enclave/sgx-step
 ```
 
 3. Install the Open Enclave build dependencies:
