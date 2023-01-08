@@ -31,6 +31,26 @@ CPU, and also in software simulation mode, when it runs on any Intel CPU
 without hardware security guarantees. 
 
 
+## A. System Requirements for SGX-STEP
+
+Add the following boot parameters to the kernel 
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nox2apic iomem=relaxed no_timer_check nosmep nosmap clearcpuid=514 kpti=0 isolcpus=1 nmi_watchdog=0 rcupdate.rcu_cpu_stall_suppress=1 msr.allow_writes=on vdso=0"
+```
+
+Then load the sgx-step module 
+
+```sh
+cd sgx-step/kernel
+make clean load 
+```
+
+See more at <https://github.com/hibana-enclave/sgx-step/README.md>
+
+> **Note**: to choose a different victim CPU, modify the macro `VICTIM_CPU` in `sgx-step/libsgxstep/config.h`, the boot parameter `isolcpus` in `/etc/default/grub` and SGX-LKL host parameter `SGXLKL_ETHREADS` and `SGXLKL_ETHREADS_AFFINITY` in the tested application (for example in `samples/basic/helloworld/Makefile`, the modification only supports one-thread application currently). 
+
+
 ## B. Building SGX-LKL-OE from source
 
 SGX-LKL has been tested on Ubuntu Linux 18.04 and with a gcc compiler

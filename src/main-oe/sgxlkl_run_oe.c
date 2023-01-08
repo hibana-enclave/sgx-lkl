@@ -50,6 +50,8 @@
 #include <sys/syscall.h>
 #include "openenclave/host.h"
 #include "libsgxstep/enclave.h"
+#include "libsgxstep/config.h"
+#include "libsgxstep/apic.h"
 
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
@@ -126,8 +128,8 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 /**************************************************************************************************************************/
 
-void aep_callback(void){
-    printf(" (( CALLBACK )) Hello World ! \n"); 
+void aex_handler(void){
+    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);    
 }
 
 
@@ -2068,8 +2070,8 @@ int main(int argc, char* argv[], char* envp[])
 
         // printf("\n==================\nethered id = %d\n", i); 
         // pid_t tid = syscall(__NR_gettid);
-        // printf(" >>>>> --- thread id = %d, cb = %p --- <<<<< \n", tid, aep_callback); 
-        register_aep_cb(aep_callback);
+        // printf(" >>>>> --- thread id = %d, cb = %p --- <<<<< \n", tid, aex_handler); 
+        register_aep_cb(aex_handler);
 
         ethreads_args[i].ethread_id = i;
         ethreads_args[i].shm = &sgxlkl_host_state.shared_memory;
