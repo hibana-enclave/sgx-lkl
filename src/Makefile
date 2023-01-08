@@ -1,5 +1,9 @@
 include ../config.mak
 
+ifeq ($(SGX_STEP_HOME),)
+$(error Can't detect sgx-step. Have you run `source oe-env.sh` ?)
+endif 
+
 LIB_SGXLKL_BUILD ?= $(BUILD_DIR)
 
 SGX_STEP_INCLUDE=$(SGX_STEP_HOME)
