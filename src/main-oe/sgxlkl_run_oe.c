@@ -52,6 +52,7 @@
 #include "libsgxstep/enclave.h"
 #include "libsgxstep/config.h"
 #include "libsgxstep/apic.h"
+#include "libsgxstep/sched.h"
 
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
@@ -128,9 +129,46 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 /**************************************************************************************************************************/
 
-void aex_handler(void){
-    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);    
+/* ================== ATTACKER IRQ/FAULT HANDLERS ================= */
+
+
+/* Called before resuming the enclave after an Asynchronous Enclave eXit. */
+void aep_cb_func(void)
+{
+    printf("((AEP)):: Hello World !\n"); 
+    // apic_timer_irq(SGX_STEP_TIMER_INTERVAL);    
 }
+
+
+/* Called upon SIGSEGV caused by untrusted page tables. */
+// void fault_handler(int signal)
+// {
+// 	info("Caught fault %d! Restoring enclave page permissions..", signal);
+// }
+
+
+/* ================== ATTACKER INIT/SETUP ================= */
+
+/* Configure and check attacker untrusted runtime environment. */
+void attacker_config_runtime(void)
+{
+    ASSERT( !claim_cpu(VICTIM_CPU) );
+    ASSERT( !prepare_system_for_benchmark(PSTATE_PCT) );
+    // ASSERT(signal(SIGSEGV, fault_handler) != SIG_ERR);
+    print_system_settings();
+
+    if (isatty(fileno(stdout)))
+    {
+        info("WARNING: interactive terminal detected; known to cause ");
+        info("unstable timer intervals! Use stdout file redirection for ");
+        info("precise single-stepping results...");
+    }
+
+    register_enclave_info();
+    print_enclave_info();
+}
+
+
 
 
 static void version()
@@ -1748,6 +1786,10 @@ int main(int argc, char* argv[], char* envp[])
 
     int c;
 
+    /* sgx-step: */
+    // idt_t idt = {0};
+
+
 #ifdef DEBUG
     signal(SIGUSR1, sgxlkl_loader_signal_handler);
     signal(SIGTERM, sgxlkl_loader_signal_handler);
@@ -2057,6 +2099,15 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
+    /* sgx-step: setup attack execution environment */
+    // attacker_config_runtime();
+    register_aep_cb(aep_cb_func);
+
+    // info_event("Establishing user-space APIC/IDT mappings");
+    // map_idt(&idt);
+    // install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    // apic_timer_oneshot(IRQ_VECTOR);
+
     for (int i = 0; i < econf->ethreads; i++)
     {
         pthread_attr_init(&eattr);
@@ -2066,12 +2117,6 @@ int main(int argc, char* argv[], char* envp[])
             CPU_SET(ethreads_cores[i % ethreads_cores_len], &set);
             pthread_attr_setaffinity_np(&eattr, sizeof(set), &set);
         }
-
-
-        // printf("\n==================\nethered id = %d\n", i); 
-        // pid_t tid = syscall(__NR_gettid);
-        // printf(" >>>>> --- thread id = %d, cb = %p --- <<<<< \n", tid, aex_handler); 
-        register_aep_cb(aex_handler);
 
         ethreads_args[i].ethread_id = i;
         ethreads_args[i].shm = &sgxlkl_host_state.shared_memory;
