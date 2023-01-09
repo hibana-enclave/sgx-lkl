@@ -53,6 +53,7 @@
 #include "libsgxstep/config.h"
 #include "libsgxstep/apic.h"
 #include "libsgxstep/sched.h"
+#include "libsgxstep/idt.h"
 
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
@@ -131,12 +132,15 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 /* ================== ATTACKER IRQ/FAULT HANDLERS ================= */
 
-
+int irq_cnt = 0; 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    printf("((AEP)):: Hello World !\n"); 
-    // apic_timer_irq(SGX_STEP_TIMER_INTERVAL);    
+    // printf("((AEP)):: Hello World !\n"); 
+    // uint64_t erip = edbgrd_erip(); 
+    // info("^^ enclave RIP=%#lx ^^ ", erip);
+    // apic_timer_irq(200);    
+    irq_cnt++; 
 }
 
 
@@ -1786,8 +1790,9 @@ int main(int argc, char* argv[], char* envp[])
 
     int c;
 
-    /* sgx-step: */
+    /* sgx-step --> */
     // idt_t idt = {0};
+    /* <-- sgx-step */
 
 
 #ifdef DEBUG
@@ -2099,14 +2104,15 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
-    /* sgx-step: setup attack execution environment */
-    // attacker_config_runtime();
+    /* sgx-step --> setup attack execution environment */
+    attacker_config_runtime();
     register_aep_cb(aep_cb_func);
 
     // info_event("Establishing user-space APIC/IDT mappings");
     // map_idt(&idt);
     // install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
     // apic_timer_oneshot(IRQ_VECTOR);
+    /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
     {
@@ -2161,6 +2167,10 @@ int main(int argc, char* argv[], char* envp[])
     // call oe_terminate_enclave otherwise, it may sefault.
     if (oe_enclave && exited_ethread_count == econf->ethreads)
     {
+        /* sgx-step --> */ 
+        // apic_timer_deadline();
+        /* <-- sgx-step */
+        
         sgxlkl_host_verbose("oe_terminate_enclave... ");
         oe_terminate_enclave(oe_enclave);
         sgxlkl_host_verbose_raw("done\n");
@@ -2182,6 +2192,7 @@ int main(int argc, char* argv[], char* envp[])
     
     
     sgx_step_print_aex_count();
+    info_event("all done; counted %d/%d IRQs (AEP/IDT)", irq_cnt, __ss_irq_count);
 
     return exit_status;
 }
