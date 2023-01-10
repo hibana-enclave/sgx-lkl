@@ -2199,7 +2199,7 @@ int main(int argc, char* argv[], char* envp[])
     
     
     // sgx_step_print_aex_count();
-    info_event("all done; counted %d IRQs (AEP)", irq_cnt);
+    info_event("all done; counted %d IRQs (AEX)", irq_cnt);
 
     return exit_status;
 }
