@@ -138,9 +138,8 @@ void aep_cb_func(void)
 {
     uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
     info("((AEP)):: enclave RIP=%#lx ^^ ", erip);
-    apic_timer_irq(200);    
+    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);    
     irq_cnt++; 
-
     // gprsgx_region_t grpsgx; 
     // edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
     // printf("(( sgx-step aep )): r14=%lx\n", grpsgx.fields.r14);
@@ -2193,7 +2192,7 @@ int main(int argc, char* argv[], char* envp[])
     
     
     // sgx_step_print_aex_count();
-    info_event("all done; counted %d/%d IRQs (AEP/IDT)", irq_cnt, __ss_irq_count);
+    info_event("all done; counted %d IRQs (AEP)", irq_cnt);
 
     return exit_status;
 }
