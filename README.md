@@ -1,4 +1,6 @@
-# SGX-LKL-OE (Open Enclave Edition)
+# SGX-LKL-OE with SGX-Step 
+
+> **Note**: For unknown reasons, the user space APIC mapping with custom user spance irq handler could freeze the kernel. The solution is to use kernel space irq handler for SGX-step signals, read this [commit](https://github.com/jovanbulck/sgx-step/commit/b6a3181724c0e13cb2237504987ac8285488b040#diff-e4d66bd49b852f9a1c9f8bfefa26a011f90f9f9d3c5dc35fa280d8522bfa0525L200). One of the underlying reasons may be resolved in this [PR](https://github.com/jovanbulck/sgx-step/pull/59), but I don't have time to confirm that.  
 
 
 > **Warning** : This branch contains an experimental port of SGX-LKL to use Open Enclave as an enclave abstraction layer.
