@@ -2114,9 +2114,12 @@ int main(int argc, char* argv[], char* envp[])
     // info_event("Establishing user-space APIC/IDT mappings");
     // map_idt(&idt);
     // install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    // apic_timer_oneshot(IRQ_VECTOR); 
     
-    info_event("((APIC)) Establishing user space APIC mapping (with kernel space handler)"); 
-    apic_timer_oneshot(IRQ_VECTOR); // if idt is not mapped, then the default handler is the user space IRQ handler. 
+    info_event("((APIC)) Establishing user space APIC mapping (with kernel space handler)");  
+    int vec = (apic_read(APIC_LVTT) & 0xff);
+    apic_timer_oneshot(vec);
+    
     /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
