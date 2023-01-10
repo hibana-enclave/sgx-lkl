@@ -136,11 +136,14 @@ int irq_cnt = 0;
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    // printf("((AEP)):: Hello World !\n"); 
-    // uint64_t erip = edbgrd_erip(); 
-    // info("^^ enclave RIP=%#lx ^^ ", erip);
-    // apic_timer_irq(200);    
+    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    info("((AEP)):: enclave RIP=%#lx ^^ ", erip);
+    apic_timer_irq(200);    
     irq_cnt++; 
+
+    // gprsgx_region_t grpsgx; 
+    // edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
+    // printf("(( sgx-step aep )): r14=%lx\n", grpsgx.fields.r14);
 }
 
 
@@ -1790,10 +1793,6 @@ int main(int argc, char* argv[], char* envp[])
 
     int c;
 
-    /* sgx-step --> */
-    // idt_t idt = {0};
-    /* <-- sgx-step */
-
 
 #ifdef DEBUG
     signal(SIGUSR1, sgxlkl_loader_signal_handler);
@@ -2108,10 +2107,12 @@ int main(int argc, char* argv[], char* envp[])
     attacker_config_runtime();
     register_aep_cb(aep_cb_func);
 
+    // idt_t idt = {0};
     // info_event("Establishing user-space APIC/IDT mappings");
     // map_idt(&idt);
     // install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-    // apic_timer_oneshot(IRQ_VECTOR);
+    
+    apic_timer_oneshot(IRQ_VECTOR);
     /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2168,7 +2169,7 @@ int main(int argc, char* argv[], char* envp[])
     if (oe_enclave && exited_ethread_count == econf->ethreads)
     {
         /* sgx-step --> */ 
-        // apic_timer_deadline();
+        apic_timer_deadline();
         /* <-- sgx-step */
         
         sgxlkl_host_verbose("oe_terminate_enclave... ");
@@ -2191,7 +2192,7 @@ int main(int argc, char* argv[], char* envp[])
         exit_status);
     
     
-    sgx_step_print_aex_count();
+    // sgx_step_print_aex_count();
     info_event("all done; counted %d/%d IRQs (AEP/IDT)", irq_cnt, __ss_irq_count);
 
     return exit_status;
