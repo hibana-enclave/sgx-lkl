@@ -77,6 +77,8 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
+#define SGX_STEP_TIMER_INTERVAL 100 // sgx-step 
+
 extern char __sgxlklrun_text_segment_start;
 
 /* Function to initialize the host interface */
@@ -2104,14 +2106,17 @@ int main(int argc, char* argv[], char* envp[])
 
     /* sgx-step --> setup attack execution environment */
     attacker_config_runtime();
+    info_event("Registering AEX handler..."); 
     register_aep_cb(aep_cb_func);
 
+    /* FIXME: the user space IRQ handler will freeze the kernel for unknown reasons... find out the reasons later */
     // idt_t idt = {0};
     // info_event("Establishing user-space APIC/IDT mappings");
     // map_idt(&idt);
     // install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
     
-    apic_timer_oneshot(IRQ_VECTOR);
+    info_event("((APIC)) Establishing user space APIC mapping (with kernel space handler)"); 
+    apic_timer_oneshot(IRQ_VECTOR); // if idt is not mapped, then the default handler is the user space IRQ handler. 
     /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2168,6 +2173,7 @@ int main(int argc, char* argv[], char* envp[])
     if (oe_enclave && exited_ethread_count == econf->ethreads)
     {
         /* sgx-step --> */ 
+        info_event("((APIC)) Restoring the normal execution environment..."); 
         apic_timer_deadline();
         /* <-- sgx-step */
         

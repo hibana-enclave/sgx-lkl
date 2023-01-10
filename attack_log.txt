@@ -1,7 +1,11 @@
+INTERVAL = NONE (without APIC)
+--------------------------------------------------------------------------------
+[main-oe/sgxlkl_run_oe.c] all done; counted 23341 IRQs (AEP)
+-------------------------------------------------------------------------------
 
-INTERVAL = 53 
-[main-oe/sgxlkl_run_oe.c] all done; counted 23219/0 IRQs (AEP/IDT)
 
+INTERVAL = 100
+--------------------------------------------------------------------------------
+[main-oe/sgxlkl_run_oe.c] all done; counted 97513 IRQs (AEP)
+--------------------------------------------------------------------------------
 
-INTERVAL = 10
-[main-oe/sgxlkl_run_oe.c] all done; counted 31922/0 IRQs (AEP/IDT)
