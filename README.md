@@ -2,13 +2,15 @@
 
 ---
 
-> **Note**: For unknown reasons, the user space APIC mapping with custom user space IRQ handler could freeze the kernel. The solution is to use kernel space IRQ handler for SGX-step signals, read this [commit](https://github.com/jovanbulck/sgx-step/commit/b6a3181724c0e13cb2237504987ac8285488b040#diff-e4d66bd49b852f9a1c9f8bfefa26a011f90f9f9d3c5dc35fa280d8522bfa0525L200). One of the underlying reasons may be purposed in this [PR](https://github.com/jovanbulck/sgx-step/pull/59), but I will check it later.  
+> **Note**: For unknown reasons, the user space APIC mapping with custom user space IRQ handler could freeze the kernel. The solution is to use kernel space IRQ handler for SGX-step signals, read this [commit](https://github.com/jovanbulck/sgx-step/commit/b6a3181724c0e13cb2237504987ac8285488b040#diff-e4d66bd49b852f9a1c9f8bfefa26a011f90f9f9d3c5dc35fa280d8522bfa0525L206). One of the underlying reasons may be purposed in this [PR](https://github.com/jovanbulck/sgx-step/pull/59), but I will check it later.  
 
 --- 
 
 > **Warning** : This branch contains an experimental port of SGX-LKL to use Open Enclave as an enclave abstraction layer.
 > This is an ongoing research project.
 > Various features are under development and there are several known bugs.
+
+---
 
 The SGX-LKL project is designed to run existing unmodified Linux binaries inside of Intel SGX enclaves. The goal of the project is to provide the necessary system support for complex applications (e.g., TensorFlow, PyTorch, and OpenVINO) and programming language runtimes (e.g., Python, the DotNet CLR and the JVM). SGX-LKL can run these applications in SGX enclaves without modifications or reliance on the untrusted host OS.
 Known incompatibilities are documented in [Incompatibilities.md](docs/Incompatibilities.md).
