@@ -2172,6 +2172,7 @@ int main(int argc, char* argv[], char* envp[])
     // call oe_terminate_enclave otherwise, it may sefault.
     if (oe_enclave && exited_ethread_count == econf->ethreads)
     {
+        /* FIXME: apic_timer can not be reset if it is interrupted */
         /* sgx-step --> */ 
         info_event("((APIC)) Restoring the normal execution environment..."); 
         apic_timer_deadline();
