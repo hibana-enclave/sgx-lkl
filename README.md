@@ -147,7 +147,7 @@ To build SGX-LKL in release mode, run:
 make RELEASE=true
 ```
 
-> *Warning* : release build may require remote attestation which is not supported by SGX-LKL currently. 
+> **Warning** : release build may require remote attestation which is not supported by SGX-LKL currently. 
 
 ### 5. To install SGX-LKL on the host system, use the following command:
 ```sh
