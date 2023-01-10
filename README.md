@@ -53,7 +53,7 @@ cd sgx-step/kernel
 make clean load 
 ```
 
-See more at <https://github.com/hibana-enclave/sgx-step/README.md>
+See more at <https://github.com/jovanbulck/sgx-step>
 
 > **Note**: to choose a different victim CPU, modify the macro `VICTIM_CPU` in `sgx-step/libsgxstep/config.h`, the boot parameter `isolcpus` in `/etc/default/grub` and SGX-LKL host parameter `SGXLKL_ETHREADS` and `SGXLKL_ETHREADS_AFFINITY` in the tested application (for example in `samples/basic/helloworld/Makefile`, the modification only supports one-thread application currently). 
 
