@@ -74,7 +74,7 @@ git clone --branch strongbox https://github.com/hibana-enclave/sgx-step
 ### 3. Install the Open Enclave build dependencies:
 ```sh
 cd openenclave
-sudo -H pip3 install --upgrade pip
+# sudo -H pip3 install --upgrade pip # optional 
 sudo scripts/ansible/install-ansible.sh
 sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
