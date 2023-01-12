@@ -8,7 +8,7 @@
 
 ---
 
-> **Note**: https://github.com/lsds/sgx-lkl/pull/257
+> **Note**: <https://github.com/lsds/sgx-lkl/pull/257> and <https://github.com/lsds/sgx-lkl/tree/3038804995ff40612fda72b3f20210ceb1339ea1/tools/ubuntu-patched-kernel-fsgsbase>
 
 --- 
 
