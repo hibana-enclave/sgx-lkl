@@ -5,11 +5,6 @@
 
 > **Note**: For unknown reasons, the user space APIC mapping with custom user space IRQ handler could freeze the kernel. The solution is to use kernel space IRQ handler for SGX-step signals, read this [commit](https://github.com/jovanbulck/sgx-step/commit/b6a3181724c0e13cb2237504987ac8285488b040#diff-e4d66bd49b852f9a1c9f8bfefa26a011f90f9f9d3c5dc35fa280d8522bfa0525L206). One of the underlying reasons may be purposed in this [PR](https://github.com/jovanbulck/sgx-step/pull/59), but I will check it later.  
 
-
----
-
-> **Note**: <https://github.com/lsds/sgx-lkl/pull/257> and <https://github.com/lsds/sgx-lkl/tree/3038804995ff40612fda72b3f20210ceb1339ea1/tools/ubuntu-patched-kernel-fsgsbase>
-
 --- 
 
 ## Introduction to SGX-Step 
@@ -50,27 +45,7 @@ without hardware security guarantees.
 > Various features are under development and there are several known bugs.
 
 
-## A. System Requirements for SGX-STEP
-
-Add the following boot parameters to the kernel 
-
-```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nox2apic iomem=relaxed no_timer_check nosmep nosmap clearcpuid=514 kpti=0 isolcpus=1 nmi_watchdog=0 rcupdate.rcu_cpu_stall_suppress=1 msr.allow_writes=on vdso=0"
-```
-
-Then load the sgx-step module 
-
-```sh
-cd sgx-step/kernel
-make clean load 
-```
-
-See more at <https://github.com/jovanbulck/sgx-step>
-
-> **Note**: to choose a different victim CPU, modify the macro `VICTIM_CPU` in `sgx-step/libsgxstep/config.h`, the boot parameter `isolcpus` in `/etc/default/grub` and SGX-LKL host parameter `SGXLKL_ETHREADS` and `SGXLKL_ETHREADS_AFFINITY` in the tested application (for example in `samples/basic/helloworld/Makefile`, the modification currently only supports one-thread application). 
-
-
-## B. Building SGX-LKL-OE from source
+## A. Building SGX-LKL-OE from source
 
 SGX-LKL has been tested on Ubuntu Linux 18.04 and with a gcc compiler
 version of 7.4 or above. Older compiler versions may lead to compilation
@@ -190,6 +165,26 @@ sgx-lkl-setup
 
 This has to be done after each reboot. It configures the host networking to 
 forward packets from SGX-LKL instances.
+
+## B. System Requirements for SGX-STEP
+
+Add the following boot parameters to the kernel 
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nox2apic iomem=relaxed no_timer_check nosmep nosmap clearcpuid=514 kpti=0 isolcpus=1 nmi_watchdog=0 rcupdate.rcu_cpu_stall_suppress=1 msr.allow_writes=on vdso=0"
+```
+
+Then load the sgx-step module 
+
+```sh
+cd sgx-step/kernel
+make clean load 
+```
+
+See more at <https://github.com/jovanbulck/sgx-step>
+
+> **Note**: to choose a different victim CPU, modify the macro `VICTIM_CPU` in `sgx-step/libsgxstep/config.h`, the boot parameter `isolcpus` in `/etc/default/grub` and SGX-LKL host parameter `SGXLKL_ETHREADS` and `SGXLKL_ETHREADS_AFFINITY` in the tested application (for example in `samples/basic/helloworld/Makefile`, the modification currently only supports one-thread application). 
+
 
 ## C. Running applications with SGX-LKL
 
