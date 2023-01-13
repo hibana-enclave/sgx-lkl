@@ -26,7 +26,7 @@ run: run-hw run-sw
 run-gdb: run-hw-gdb
 
 run-hw: ${SGXLKL_ROOTFS}
-	$(SGXLKL_ENV) $(SGXLKL_STARTER) $(SGXLKL_HW_PARAMS) --enclave-config enclave_config.json $(SGXLKL_ROOTFS) $(PROG)
+	SGXLKL_ETHREADS=1 SGXLKL_ETHREADS_AFFINITY=22 $(SGXLKL_STARTER) $(SGXLKL_HW_PARAMS) $(SGXLKL_ROOTFS) $(PROG)
 
 run-sw: ${SGXLKL_ROOTFS}
 	$(SGXLKL_ENV) $(SGXLKL_STARTER) $(SGXLKL_SW_PARAMS) --enclave-config enclave_config.json $(SGXLKL_ROOTFS) $(PROG)

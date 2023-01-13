@@ -1,6 +1,13 @@
 include ../config.mak
 
+ifeq ($(SGX_STEP_HOME),)
+$(error Can't detect sgx-step. Have you run `source oe-env.sh` ?)
+endif 
+
 LIB_SGXLKL_BUILD ?= $(BUILD_DIR)
+
+SGX_STEP_INCLUDE=$(SGX_STEP_HOME)
+SGX_STEP_LIB=$(SGX_STEP_HOME)/libsgxstep
 
 srcdir = ${SGXLKL_ROOT}/src
 musl_srcdir = $(SGXLKL_LIBC_SRC_DIR)/src
@@ -11,7 +18,7 @@ CROSS_COMPILE =
 RANLIB  = $(CROSS_COMPILE)ranlib
 
 # TODO remove -Wno-error flags
-CFLAGS_MAIN = -I$(OE_SDK_INCLUDES) -Wall -Werror -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=strict-aliasing
+CFLAGS_MAIN = -I$(OE_SDK_INCLUDES) -I$(SGX_STEP_INCLUDE) -Wall -Werror -Wno-error=incompatible-pointer-types -Wno-error=pointer-to-int-cast -Wno-error=strict-aliasing
 CFLAGS_MAIN += -DOE_WITH_EXPERIMENTAL_EEID -I$(srcdir)/libjson/include -I$(LIB_SGXLKL_BUILD)/config
 # TODO add -nostdinc after relayering work complete
 #      cannot use -nostdinc currently as stdatomic.h is included which is missing
@@ -45,6 +52,9 @@ CFLAGS_SGXLKL_ALL += -D_XOPEN_SOURCE=700
 CFLAGS_SGXLKL_ALL += $(SGXLKL_INCLUDES) -isystem $(E2FSPROGS_BUILD)/include -isystem $(DEVICEMAPPER_BUILD)/include -I$(srcdir)/libjson/include -I$(LIBVICSETUP_DIR)/include -isystem $(ARGON2_DIR)/include
 
 # -----------------------------------------------------------------------------------------
+
+$(SGX_STEP_LIB)/libsgx-step.a:  
+	$(MAKE) -C $(SGX_STEP_HOME)/libsgxstep all 
 
 all: builddirs $(SGXLKL_RUN_TARGET) $(SGXLKL_STATIC_LIB)
 
@@ -141,11 +151,11 @@ $(MAIN_OE_OBJS): $(LIB_SGXLKL_BUILD)/main-oe/%.o: %.c | ${OE_HOST_CALLS}
 	@echo "CC $<"
 	@$(CC) -I${LKL_BUILD}/include/ -I$(srcdir)/include -I$(srcdir)/main-oe/ $(CFLAGS_MAIN) -c -o $@ $<
 
-$(LIB_SGXLKL_BUILD)/$(SGXLKL_RUN_TARGET): $(LIB_SGXLKL_BUILD)/main-oe/main-oe.a $(OE_SDK_LIBS)/openenclave/host/liboehost.a builddirs
+$(LIB_SGXLKL_BUILD)/$(SGXLKL_RUN_TARGET): $(SGX_STEP_LIB)/libsgx-step.a $(LIB_SGXLKL_BUILD)/main-oe/main-oe.a $(OE_SDK_LIBS)/openenclave/host/liboehost.a builddirs
 	@echo "CC $<"
 	@$(CC) $(CFLAGS_MAIN) -o $@ $(LIB_SGXLKL_BUILD)/main-oe/main-oe.a -lcrypto $(LINK_MAIN) \
-	-pthread -ldl -lrt -lz -lm -Wl,-T $(sgxlkl_scriptsdir)/sgx-lkl.ld -L$(OE_SDK_LIBS)/openenclave/host -rdynamic \
-	-Wl,-z,noexecstack -loehost -ldl -lsgx_enclave_common -lsgx_urts -lssl -lcrypto $(DCAP_LIB)
+	-pthread -ldl -lrt -lz -lm -Wl,-T $(sgxlkl_scriptsdir)/sgx-lkl.ld -L$(SGX_STEP_LIB) -L$(OE_SDK_LIBS)/openenclave/host -rdynamic \
+	-Wl,-z,noexecstack -lsgx-step -loehost -ldl -lsgx_enclave_common -lsgx_urts -lssl -lcrypto $(DCAP_LIB)
 
 $(LIB_SGXLKL_BUILD)/main-oe/main-oe.a: $(MAIN_OE_OBJS) builddirs
 	@echo "AR rc $@"
