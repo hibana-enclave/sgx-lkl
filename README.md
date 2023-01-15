@@ -71,6 +71,23 @@ git clone --branch strongbox --recursive https://github.com/hibana-enclave/opene
 git clone --branch strongbox https://github.com/hibana-enclave/sgx-step
 ```
 
+TODO: 
+
+add git modules 
+
+``` 
+git clone https://github.com/hibana-enclave/sgx-lkl.git
+cd sgx-lkl
+git submodule init
+git submodule update host-musl --progress
+git submodule update lkl --progress
+git submodule update ltp --progress
+git submodule update sgx-lkl-musl --progress
+git submodule update sgx-step --progress
+git submodule update openenclave --recursive --progress
+```
+
+
 ### 3. Install the Open Enclave build dependencies:
 ```sh
 cd openenclave
