@@ -71,6 +71,23 @@ git clone --branch strongbox --recursive https://github.com/hibana-enclave/opene
 git clone --branch strongbox https://github.com/hibana-enclave/sgx-step
 ```
 
+TODO: 
+
+add git modules 
+
+``` 
+git clone https://github.com/hibana-enclave/sgx-lkl.git
+cd sgx-lkl
+git submodule init
+git submodule update host-musl --progress
+git submodule update lkl --progress
+git submodule update ltp --progress
+git submodule update sgx-lkl-musl --progress
+git submodule update sgx-step --progress
+git submodule update openenclave --recursive --progress
+```
+
+
 ### 3. Install the Open Enclave build dependencies:
 ```sh
 cd openenclave
@@ -80,13 +97,6 @@ sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 ```
 
 > **Note**: that the above also installs the Intel SGX driver (DCAP driver) on the host.
-
-If running on machines offer SGX 1 support (using `isgx` driver instead of dcap driver `intel_sgx`), the last line above should be 
-replaced by: 
-
-```sh
-sudo ansible-playbook scripts/ansible/oe-contributors-setup-sgx1.yml
-```
 
 > **Note**: from linux kernel 5.11, the SGX patches are merged into the mainline kernel. It is recommended to use in-kernel driver `sgx_enclave` in newer Ubuntu distribution. The out-of-tree sgx driver `isgx` and dcap driver `intel_sgx` will be deprecated. As the testing operating system is Ubuntu 18, the dcap driver or out-of-tree driver will be used here. 
 
