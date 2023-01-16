@@ -1,11 +1,7 @@
-FROM alpine:3.6 AS builder
+FROM alpine:3.16
 
-RUN apk add --no-cache gcc musl-dev
-
+ARG STRONGBOX_FLAGS
+RUN apk add --no-cache musl-dev bash gcc 
 ADD *.c /
-RUN gcc -g -o helloworld helloworld.c
-
-FROM alpine:3.6
-
-COPY --from=builder helloworld .
-ADD app /app
+ADD app/helloworld.txt /app/helloworld.txt
+RUN gcc -o helloworld helloworld.c
