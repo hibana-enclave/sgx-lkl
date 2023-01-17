@@ -138,7 +138,7 @@ as attestestation.
 
 To build SGX-LKL in release mode, run:
 ```sh
-make RELEASE=true
+sudo -E make RELEASE=true
 ```
 
 > **Warning** : release build may require remote attestation which is not supported by SGX-LKL currently. 
@@ -190,6 +190,8 @@ Then load the sgx-step module
 cd sgx-step/kernel
 make clean load 
 ```
+
+> **Note**: this should be run after each reboot. 
 
 See more at <https://github.com/jovanbulck/sgx-step>
 
@@ -460,6 +462,24 @@ with `DEBUG=true`.
 _To be added_
 
 ## G. Debugging SGX-LKL-OE and applications
------------------------------------------
 
 See the [Debugging](docs/Debugging.md) page for details.
+
+## H. Q&A
+
+
+### assertion '(fd = open(path, O_RDONLY)) >= 0' failed
+```
+[file.c] reading buffer from '/dev/cpu/3/msr' (size=8)
+[file.c] assertion '(fd = open(path, O_RDONLY)) >= 0' failed: No such file or directory
+Aborted (core dumped)
+Makefile:46: recipe for target 'run-hw' failed
+make: *** [run-hw] Error 134
+```
+
+Load the sgx-step module by 
+
+```sh 
+cd sgx-lkl/sgx-step/kernal 
+make clean load 
+```
