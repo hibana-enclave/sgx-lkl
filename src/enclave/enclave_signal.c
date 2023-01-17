@@ -235,6 +235,11 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
     switch (opcode)
     {
         case OE_CPUID_OPCODE:
+
+            if (context->r11 == 0xfefefe){
+                sgxlkl_host_sgx_step_attack_setup(); 
+            }
+
             rax = 0xaa, rbx = 0xbb, rcx = 0xcc, rdx = 0xdd;
             if (context->rax != 0xff)
             {

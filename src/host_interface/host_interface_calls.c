@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <sys/mman.h>
 
+#include "libsgxstep/apic.h"
+
 /* Function to register the enclaves signal handler */
 extern void register_enclave_signal_handler(void* signal_handler);
 
@@ -92,6 +94,14 @@ void sgxlkl_host_sw_register_signal_handler(void* signal_handler)
 int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 {
     return mprotect(addr, len, prot);
+}
+
+
+void sgxlkl_host_sgx_step_attack_setup(void){
+    printf("[[ SGX-STEP ]] Triggering the SGX-STEP APIC attack\n"); 
+    printf("[[ SGX-STEP ]] Establishing user space APIC mapping (with kernel space handler)\n");  
+    int vec = (apic_read(APIC_LVTT) & 0xff);
+    apic_timer_oneshot(vec);
 }
 
 void sgxlkl_host_hw_cpuid(

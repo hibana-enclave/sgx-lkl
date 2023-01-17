@@ -2105,14 +2105,9 @@ int main(int argc, char* argv[], char* envp[])
     ethread_args_t ethreads_args[econf->ethreads];
 
     /* sgx-step --> setup attack execution environment */
-    // attacker_config_runtime();
+    attacker_config_runtime();
     info_event("Registering AEX handler..."); 
     register_aep_cb(aep_cb_func);
-    
-    // info_event("((APIC)) Establishing user space APIC mapping (with kernel space handler)");  
-    // int vec = (apic_read(APIC_LVTT) & 0xff);
-    // apic_timer_oneshot(vec);
-    
     /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2170,8 +2165,8 @@ int main(int argc, char* argv[], char* envp[])
     {
         /* FIXME: apic_timer can not be reset if it is interrupted */
         /* sgx-step --> */ 
-        // info_event("((APIC)) Restoring the normal execution environment..."); 
-        // apic_timer_deadline();
+        info_event("((APIC)) Restoring the normal execution environment..."); 
+        apic_timer_deadline();
         /* <-- sgx-step */
         
         sgxlkl_host_verbose("oe_terminate_enclave... ");
