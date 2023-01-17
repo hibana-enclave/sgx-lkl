@@ -144,7 +144,6 @@ static uint64_t sgxlkl_enclave_signal_handler(
     ret = get_trap_details(exception_record->code, &trap_info);
     if (ret != -1)
     {
-        printf("[[ StrongBox ]] : I will send attack from here! \n"); 
         SGXLKL_TRACE_SIGNAL(
             "Exception %s received (code=%d address=0x%lx opcode=0x%x)\n",
             trap_info.description,
