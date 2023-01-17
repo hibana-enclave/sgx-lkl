@@ -102,6 +102,8 @@ void sgxlkl_host_hw_cpuid(
     uint32_t* ecx,
     uint32_t* edx)
 {
+    printf("Hello Hello!\n");
+
     if (eax)
         *eax = 0;
 
