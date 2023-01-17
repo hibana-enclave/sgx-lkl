@@ -1165,8 +1165,7 @@ void lkl_terminate(int exit_status)
 {
 
     /* randoruf */
-    SGXLKL_VERBOSE("************** Application End **************");
-    if (getenv_bool("SGXLKL_PRINT_APP_RUNTIME", 0))
+    printf("************** Application End **************\n");
     {
         struct timespec endtime, runtime;
         clock_gettime(CLOCK_MONOTONIC, &endtime);
