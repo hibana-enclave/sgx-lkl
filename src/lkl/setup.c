@@ -1164,6 +1164,7 @@ static _Atomic(bool) _is_lkl_terminating = false;
 void lkl_terminate(int exit_status)
 {
 
+    /* randoruf */
     SGXLKL_VERBOSE("************** Application End **************");
     if (getenv_bool("SGXLKL_PRINT_APP_RUNTIME", 0))
     {
@@ -1175,6 +1176,7 @@ void lkl_terminate(int exit_status)
             runtime.tv_sec,
             runtime.tv_nsec);
     }
+    /* randoruf */
 
     int ret;
     long res;
