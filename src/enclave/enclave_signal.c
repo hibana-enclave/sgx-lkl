@@ -21,6 +21,12 @@
 
 #define RDTSC_OPCODE 0x310F
 
+#define UD2_OPCODE 0xB0F  /* trigger sgx-step attack in enclave 
+                                0F 0B    UD2    <https://mudongliang.github.io/x86/html/file_module_x86_id_318.html>
+                                0F A2   CPUID   <https://mudongliang.github.io/x86/html/file_module_x86_id_45.html>
+                                https://github.com/lsds/openenclave/blob/feature.sgx-lkl/include/openenclave/internal/cpuid.h#L9
+                              */ 
+
 /* Mapping between OE and hardware exception */
 struct oe_hw_exception_map
 {
@@ -233,13 +239,20 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
     char* instruction_name = "";
 
     switch (opcode)
-    {
-        case OE_CPUID_OPCODE:
-
+    {   
+        /* allow attack from anywhere in the in-enclave application by settng up the APIC timer */
+        case UD2_OPCODE:
+            printf("[[ SGX-STEP ]] Encounter ud2 instruction which is trigger marker of sgx-step attack \n"); 
+            // FIXME: hashing is a good way to uniquely identify that `ud2` is truely issued by the attacker 
+            // (make sure that the context of r11 must be saved)
             if (context->r11 == 0xfefefe){
-                sgxlkl_host_sgx_step_attack_setup(); 
+                /* leave the enclave by OCALL and send the first APIC signal in host handler */
+                sgxlkl_host_sgx_step_attack_setup();
+            }else{
+                sgxlkl_fail("Encountered an illegal instruction inside enclave (opcode=0x%x [%s])\n", opcode, "ud2");
             }
-
+            break; 
+        case OE_CPUID_OPCODE:
             rax = 0xaa, rbx = 0xbb, rcx = 0xcc, rdx = 0xdd;
             if (context->rax != 0xff)
             {
@@ -279,7 +292,7 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
                 instruction_name);
     }
 
-    /* Skip over the illegal instruction. */
+    /* Skip over the illegal instruction (note: it will skip the invalid ud2 instruction which is issued by the attacker). */
     context->rip += 2;
 }
 
