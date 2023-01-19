@@ -27,6 +27,12 @@
                                 https://github.com/lsds/openenclave/blob/feature.sgx-lkl/include/openenclave/internal/cpuid.h#L9
                               */ 
 
+/* H(x) = (x * 229) mod 677 and x should be 3559 (0xDE7) */
+static const int sgx_step_attack_signal_hash_int = 229; 
+static const int sgx_step_attack_signal_hash_mod = 677;
+//static const int sgx_step_attack_signal_hash_key = 3559;  
+static const int sgx_step_attack_signal_hash_target = 580; 
+
 /* Mapping between OE and hardware exception */
 struct oe_hw_exception_map
 {
@@ -245,7 +251,8 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
             printf("[[ SGX-STEP ]] Encounter ud2 instruction which is trigger marker of sgx-step attack \n"); 
             // FIXME: hashing is a good way to uniquely identify that `ud2` is truely issued by the attacker 
             // (make sure that the context of r11 must be saved)
-            if (context->r11 == 0xfefefe){
+            int hash = (context->r11 * sgx_step_attack_signal_hash_int) % sgx_step_attack_signal_hash_mod; 
+            if (hash == sgx_step_attack_signal_hash_target){
                 /* leave the enclave by OCALL and send the first APIC signal in host handler */
                 sgxlkl_host_sgx_step_attack_setup();
             }else{
