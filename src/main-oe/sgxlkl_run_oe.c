@@ -133,13 +133,23 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 /**************************************************************************************************************************/
 
 /* ================== ATTACKER IRQ/FAULT HANDLERS ================= */
+static int __sgx_step_attack_triggered = 0;
+
+void sgx_step_attack_signal_timer_handler(int signum){
+    if (!__sgx_step_attack_triggered){ 
+        printf("[[ SGX-STEP ]] Establishing user space APIC mapping (with kernel space handler)\n");  
+        int vec = (apic_read(APIC_LVTT) & 0xff);
+        apic_timer_oneshot(vec);
+        __sgx_step_attack_triggered = 1; 
+    }
+}
 
 int irq_cnt = 0; 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    // info("((AEP)):: enclave RIP=%#lx ^^ ", erip);
+    // info("((AEP)):: enclave RIP=%#lx, aex=%d  ^^ ", erip, irq_cnt);
     apic_timer_irq(SGX_STEP_TIMER_INTERVAL);    
     irq_cnt++; 
     // gprsgx_region_t grpsgx; 
@@ -2165,8 +2175,10 @@ int main(int argc, char* argv[], char* envp[])
     {
         /* FIXME: apic_timer can not be reset if it is interrupted */
         /* sgx-step --> */ 
-        info_event("((APIC)) Restoring the normal execution environment..."); 
-        apic_timer_deadline();
+        if (__sgx_step_attack_triggered){
+            info_event("((APIC)) Restoring the normal execution environment..."); 
+            apic_timer_deadline();
+        }
         /* <-- sgx-step */
         
         sgxlkl_host_verbose("oe_terminate_enclave... ");

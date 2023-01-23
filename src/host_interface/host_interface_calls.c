@@ -9,6 +9,12 @@
 #include <sys/mman.h>
 
 #include "libsgxstep/apic.h"
+#include <string.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <sys/time.h>
+
+extern void sgx_step_attack_signal_timer_handler(int signum); 
 
 /* Function to register the enclaves signal handler */
 extern void register_enclave_signal_handler(void* signal_handler);
@@ -98,10 +104,25 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 
 
 void sgxlkl_host_sgx_step_attack_setup(void){
-    printf("[[ SGX-STEP ]] Triggering the SGX-STEP APIC attack\n"); 
-    printf("[[ SGX-STEP ]] Establishing user space APIC mapping (with kernel space handler)\n");  
-    int vec = (apic_read(APIC_LVTT) & 0xff);
-    apic_timer_oneshot(vec);
+    unsigned int attack_timer_delay = 1; 
+    printf("[[ SGX-STEP ]] The host will trigger the SGX-STEP APIC attack in %d second \n", attack_timer_delay); 
+    struct sigaction sa; 
+    struct itimerval timer; 
+    /* Install timer_handler as the signal handler for SIGVTALRM */
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = &sgx_step_attack_signal_timer_handler; 
+    sigaction(SIGVTALRM, &sa, NULL);   
+    /* configure the timer to expire after 250 msec... */
+    timer.it_value.tv_sec = 0;           
+    timer.it_value.tv_usec = 1000;
+    //  
+    timer.it_interval.tv_sec = 0;       
+    timer.it_interval.tv_usec = 0; 
+    /* start a virtual timer */
+    setitimer(ITIMER_VIRTUAL, &timer, NULL); 
+
+
+    // sgx_step_attack_signal_timer_handler(0); 
 }
 
 void sgxlkl_host_hw_cpuid(
