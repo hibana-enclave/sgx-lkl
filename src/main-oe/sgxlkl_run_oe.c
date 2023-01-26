@@ -144,14 +144,12 @@ void sgx_step_attack_signal_timer_handler(int signum){
     }
 }
 
-int irq_cnt = 0; 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    // info("((AEP)):: enclave RIP=%#lx, aex=%d  ^^ ", erip, irq_cnt);
-    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);    
-    irq_cnt++; 
+    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    info("((AEP)):: enclave RIP=%#lx ^^ ", erip);
+    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
     // gprsgx_region_t grpsgx; 
     // edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
     // printf("(( sgx-step aep )): r14=%lx\n", grpsgx.fields.r14);
@@ -2202,7 +2200,6 @@ int main(int argc, char* argv[], char* envp[])
     
     
     // sgx_step_print_aex_count();
-    info_event("all done; counted %d IRQs (AEX)", irq_cnt);
 
     return exit_status;
 }
