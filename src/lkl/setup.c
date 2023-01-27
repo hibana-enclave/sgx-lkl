@@ -1165,7 +1165,7 @@ void lkl_terminate(int exit_status)
 {
 
     /* randoruf */
-    printf("************** Application End **************\n");
+    sgxlkl_app_main_end_notify(); 
     {
         struct timespec endtime, runtime;
         clock_gettime(CLOCK_MONOTONIC, &endtime);

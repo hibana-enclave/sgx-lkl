@@ -20,6 +20,18 @@
 char* at_platform = "x86_64";
 sgxlkl_enclave_state_t sgxlkl_enclave_state = {0};
 
+void sgxlkl_app_main_end_notify()
+{
+    printf("[[ ENC ]] ************** Application End **************\n");
+    sgxlkl_host_app_main_end(); 
+}
+
+void sgxlkl_app_main_start_notify()
+{
+    printf("[[ ENC ]]************** Application Start **************\n");
+}
+
+
 bool sgxlkl_in_sw_debug_mode()
 {
     return sgxlkl_enclave_state.config->mode == SW_DEBUG_MODE;

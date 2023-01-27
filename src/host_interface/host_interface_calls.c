@@ -17,6 +17,9 @@
 #define SGX_STEP_ATTACK_RANDOM_LOW_USEC 1000 
 #define SGX_STEP_ATTACK_RANDOM_HIGH_USEC 2000 
 
+extern unsigned int __sgx_lkl_aex_cnt_aux; 
+extern unsigned int sgx_lkl_aex_cnt; 
+
 extern void sgx_step_attack_signal_timer_handler(int signum); 
 
 /* Function to register the enclaves signal handler */
@@ -105,8 +108,13 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
     return mprotect(addr, len, prot);
 }
 
+void sgxlkl_host_app_main_end(void)
+{
+    sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
+} 
 
-void sgxlkl_host_sgx_step_attack_setup(void){
+void sgxlkl_host_sgx_step_attack_setup(void)
+{
     /* random delay */  
     unsigned int attack_timer_range = SGX_STEP_ATTACK_RANDOM_HIGH_USEC - SGX_STEP_ATTACK_RANDOM_LOW_USEC + 1; 
     srand(time(NULL)); 
