@@ -113,6 +113,11 @@ void sgxlkl_host_app_main_end(void)
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
 } 
 
+void sgxlkl_host_app_main_start(void)
+{
+    __sgx_lkl_aex_cnt_aux = 0; 
+}
+
 void sgxlkl_host_sgx_step_attack_setup(void)
 {
     /* random delay */  
@@ -120,7 +125,6 @@ void sgxlkl_host_sgx_step_attack_setup(void)
     srand(time(NULL)); 
     unsigned int attack_timer_delay = SGX_STEP_ATTACK_RANDOM_LOW_USEC + rand() % attack_timer_range; 
     printf("[[ SGX-STEP ]] The host will trigger the SGX-STEP APIC attack in %d second \n", attack_timer_delay); 
-
     /* Install timer_handler as the signal handler for SIGVTALRM */
     struct sigaction sa; 
     struct itimerval timer; 

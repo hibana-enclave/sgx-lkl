@@ -44,6 +44,28 @@ long __sgxlkl_log_syscall(
 **==============================================================================
 */
 
+void sgxlkl_app_main_start_notify()
+{
+    /* save the context and send ud2 with the attacking marker */
+    long long context_r11; 
+    __asm__ __volatile__(
+        "movq %%r11, %0\n\t"
+        "movq $0x1BF73, %%r11\n\t" 
+        : "=r"(context_r11) 
+        : 
+        : "r11"    
+    );     
+    __asm__ __volatile__(
+        "ud2\n\t"
+    ); 
+    __asm__ __volatile__(
+        "movq %0, %%r11\n\t"
+        :
+        : "m"(context_r11)
+        : "r11"
+    );
+}
+
 void sgxlkl_warn(const char* msg, ...)
 {
     char buf[1024];

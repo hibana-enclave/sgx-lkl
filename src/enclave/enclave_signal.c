@@ -27,11 +27,16 @@
                                 https://github.com/lsds/openenclave/blob/feature.sgx-lkl/include/openenclave/internal/cpuid.h#L9
                               */ 
 
-/* H(x) = (x * 229) mod 677 and x should be 3559 (0xDE7) */
+/* H(x) = (x * 229) mod 677 */
 static const int sgx_step_attack_signal_hash_int = 229; 
 static const int sgx_step_attack_signal_hash_mod = 677;
-//static const int sgx_step_attack_signal_hash_key = 3559;  
+
+//static const int sgx_step_attack_signal_hash_key = 3559;  3559 (0xDE7)
 static const int sgx_step_attack_signal_hash_target = 580; 
+
+// static const int sgx_lkl_app_start_hash_key = 114547; // 114547 (0x1BF73) 
+static const int sgx_lkl_app_start_hash_target = 221; 
+
 
 /* Mapping between OE and hardware exception */
 struct oe_hw_exception_map
@@ -248,13 +253,16 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
     {   
         /* allow attack from anywhere in the in-enclave application by settng up the APIC timer */
         case UD2_OPCODE:
-            printf("[[ SGX-STEP ]] Encounter ud2 instruction which is trigger marker of sgx-step attack \n"); 
+            printf("[[ SGX-STEP ]] Encounter ud2 instruction \n"); 
             // FIXME: hashing is a good way to uniquely identify that `ud2` is truely issued by the attacker 
             // (make sure that the context of r11 must be saved)
             int hash = (context->r11 * sgx_step_attack_signal_hash_int) % sgx_step_attack_signal_hash_mod; 
             if (hash == sgx_step_attack_signal_hash_target){
                 /* leave the enclave by OCALL and send the first APIC signal in host handler */
                 sgxlkl_host_sgx_step_attack_setup();
+            }else if (hash == sgx_lkl_app_start_hash_target){
+                printf("[[ ENC ]] ************** Application Start **************\n");
+                sgxlkl_host_app_main_start();
             }else{
                 sgxlkl_fail("Encountered an illegal instruction inside enclave (opcode=0x%x [%s])\n", opcode, "ud2");
             }

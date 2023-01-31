@@ -28,7 +28,7 @@ void sgxlkl_app_main_end_notify()
 
 void sgxlkl_app_main_start_notify()
 {
-    printf("[[ ENC ]]************** Application Start **************\n");
+    sgxlkl_fail("ERROR: the sgx-lkl enclave app starts feature is implemented by ud2 interrupt. Hence, this function is dummy for now. \n");
 }
 
 

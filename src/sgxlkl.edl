@@ -40,6 +40,7 @@ enclave {
 
     untrusted {
         void sgxlkl_host_app_main_end(void); 
+        void sgxlkl_host_app_main_start(void); 
 
         // Host Call (OCALL) for ethreads to trigger sgx-step apic outside of the enclave
         void sgxlkl_host_sgx_step_attack_setup(void); 
