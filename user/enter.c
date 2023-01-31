@@ -62,9 +62,9 @@ void sgxlkl_user_enter(sgxlkl_userargs_t* args, size_t args_size)
 
     if (sizeof(sgxlkl_userargs_t) != args_size)
     {
-        printf("[[ SGX-LKL ]] ERROR: the size of type `sgxlkl_userargs_t` does not matach `args_size`. Issuing SIGSEGV \n");
+        printf("[[ SGX-LKL ]] ERROR: the size of type `sgxlkl_userargs_t` does not matach `args_size`. Raise SIGSEGV \n");
         a_crash();
-        *((int*)0) = 0;
+        *((int*)0) = 0; // FIXME: this is a very bad habit to raise some debug execeptions since it does not provide enough information. 
     }
 
     _dlstart_c((size_t)args->elf64_hdr);
