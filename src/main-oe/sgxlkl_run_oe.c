@@ -137,22 +137,35 @@ static int __sgx_step_attack_triggered = 0;
 
 void sgx_step_attack_signal_timer_handler(int signum){
     if (!__sgx_step_attack_triggered){ 
-        printf("[[ SGX-STEP ]] Establishing user space APIC mapping (with kernel space handler)\n");  
+        info_event("(( APIC )) Establishing user space APIC mapping (with kernel space handler)");   
         int vec = (apic_read(APIC_LVTT) & 0xff);
         apic_timer_oneshot(vec);
         __sgx_step_attack_triggered = 1; 
     }
 }
 
+static void aep_handler_debug_delay_attack_test(){
+    gprsgx_region_t grpsgx; 
+    edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
+    if (__sgx_step_attack_triggered){
+        printf("(( Host AEP ))::: r14=%ld\n", grpsgx.fields.r14);
+    }
+} 
+
+// static void aep_handler_debug_erip(){
+//     uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+//     printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
+// }
+
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    info("((AEP)):: enclave RIP=%#lx ^^ ", erip);
-    // apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
-    // gprsgx_region_t grpsgx; 
-    // edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
-    // printf("(( sgx-step aep )): r14=%lx\n", grpsgx.fields.r14);
+    /* the next apic attack */
+    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
+    
+    /* code for debugging purporse */
+    // aep_handler_debug_erip(); 
+    aep_handler_debug_delay_attack_test(); 
 }
 
 
@@ -2174,7 +2187,7 @@ int main(int argc, char* argv[], char* envp[])
         /* FIXME: apic_timer can not be reset if it is interrupted */
         /* sgx-step --> */ 
         if (__sgx_step_attack_triggered){
-            info_event("((APIC)) Restoring the normal execution environment..."); 
+            info_event("(( APIC )) Restoring the normal execution environment..."); 
             apic_timer_deadline();
         }
         /* <-- sgx-step */
