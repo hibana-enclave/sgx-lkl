@@ -1164,8 +1164,7 @@ static _Atomic(bool) _is_lkl_terminating = false;
 void lkl_terminate(int exit_status)
 {
 
-    /* randoruf */
-    sgxlkl_app_main_end_notify(); 
+    /* sgx-step */
     {
         struct timespec endtime, runtime;
         clock_gettime(CLOCK_MONOTONIC, &endtime);
@@ -1175,7 +1174,7 @@ void lkl_terminate(int exit_status)
             runtime.tv_sec,
             runtime.tv_nsec);
     }
-    /* randoruf */
+    /* sgx-step */
 
     int ret;
     long res;

@@ -22,13 +22,14 @@ sgxlkl_enclave_state_t sgxlkl_enclave_state = {0};
 
 void sgxlkl_app_main_end_notify()
 {
-    printf("[[ ENC ]] ************** Application End **************\n");
-    sgxlkl_host_app_main_end(); 
+    sgxlkl_fail("ERROR: the sgx-lkl enclave app starts feature is implemented by ud2 interrupt. Hence, this function is dummy for now. \n");
+    *((int*)0) = 0;
 }
 
 void sgxlkl_app_main_start_notify()
 {
     sgxlkl_fail("ERROR: the sgx-lkl enclave app starts feature is implemented by ud2 interrupt. Hence, this function is dummy for now. \n");
+    *((int*)0) = 0;
 }
 
 

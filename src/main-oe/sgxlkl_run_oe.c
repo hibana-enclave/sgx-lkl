@@ -147,8 +147,8 @@ void sgx_step_attack_signal_timer_handler(int signum){
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    // info("((AEP)):: enclave RIP=%#lx ^^ ", erip);
+    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    info("((AEP)):: enclave RIP=%#lx ^^ ", erip);
     // apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
     // gprsgx_region_t grpsgx; 
     // edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
@@ -2113,7 +2113,7 @@ int main(int argc, char* argv[], char* envp[])
     ethread_args_t ethreads_args[econf->ethreads];
 
     /* sgx-step --> setup attack execution environment */
-    attacker_config_runtime();
+    // attacker_config_runtime();
     info_event("Registering AEX handler..."); 
     register_aep_cb(aep_cb_func);
     /* <-- sgx-step */
