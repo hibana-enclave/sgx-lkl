@@ -49,6 +49,13 @@
 #include "openenclave/corelibc/oestring.h"
 #include "openenclave/internal/safecrt.h"
 
+// Nelly
+//#include "openenclave/include/openenclave/bits/sgx/sgxtypes.h"
+#include "/home/nelly/sgx-lkl-step-haohua/openenclave/include/openenclave/bits/sgx/sgxtypes.h"
+#include "/home/nelly/sgx-lkl-step-haohua/openenclave/include/openenclave/internal/sgx/td.h"
+//#include "/home/nelly/sgx-lkl/openenclave/enclave/core/sgx/td.h"
+
+
 extern int vio_enclave_wakeup_event_channel(void);
 
 static void _exec(void* lt);
@@ -216,6 +223,38 @@ int lthread_run(void)
     size_t pauses = sleepspins;
     int spins = futex_wake_spins;
     int dequeued;
+
+    //    Nelly
+    //    printf("Start lthread modification\n");
+    sgxlkl_info("Start lthread modification Nelly\n");
+
+    oe_sgx_td_t* td = oe_sgx_get_td();
+    sgxlkl_info("DEBUG td address: %p\n", td);
+
+    //    oe_thread_data_t base = td->base;
+
+    //    uint64_t td_self_addr = base.self_addr;
+    //    sgxlkl_info("DEBUG td self address: %p\n", td_self_addr);
+
+    //    sgx_tcs_t* tcs = (sgx_tcs_t*)(td_self_addr - (5 * 4096));
+    //    uint64_t * tcs_addr = ((uint64_t)td - (5 * 4096));
+
+    sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * 4096));
+    sgxlkl_info("DEBUG tcs address: %p\n", tcs);
+    //    sgxlkl_info("DEBUG tcs cssa: %d\n", tcs->cssa);
+
+    //    sgxlkl_info("DEBUG start : %p\n", (uint64_t*)tcs+4088);
+    //    uint32_t cssa = tcs->cssa;
+    //    sgxlkl_info("DEBUG cssa : %d\n", cssa);
+
+    //    uint64_t* ssa_base_address_address = (void*)((uint64_t*)tcs + 1 *
+    //    4096);
+    sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184);
+    //    sgxlkl_info("DEBUG ssa base address: %p\n", ssa_base_address_address);
+    sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
+
+    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));
+
 
     /* Check if the scheduler was initialized. */
     if (sched == NULL)
