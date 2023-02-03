@@ -136,36 +136,37 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 static int __sgx_step_attack_triggered = 0;
 
 void sgx_step_attack_signal_timer_handler(int signum){
-    if (!__sgx_step_attack_triggered){ 
-        info_event("(( APIC )) Establishing user space APIC mapping (with kernel space handler)");   
-        int vec = (apic_read(APIC_LVTT) & 0xff);
-        apic_timer_oneshot(vec);
-        __sgx_step_attack_triggered = 1; 
-    }
+    // info_event("(( APIC )) Establishing user space APIC mapping (with kernel space handler)");   
+    // int vec = (apic_read(APIC_LVTT) & 0xff);
+    // apic_timer_oneshot(vec);
 }
 
-static void aep_handler_debug_delay_attack_test(){
-    gprsgx_region_t grpsgx; 
-    edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
-    if (__sgx_step_attack_triggered){
-        printf("(( Host AEP ))::: r14=%ld\n", grpsgx.fields.r14);
-    }
-} 
+// static void aep_handler_debug_delay_attack_test(){
+//     gprsgx_region_t grpsgx; 
+//     edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
+//     if (__sgx_step_attack_triggered){
+//         printf("(( Host AEP ))::: r14=%ld\n", grpsgx.fields.r14);
+//     }
+// } 
 
-// static void aep_handler_debug_erip(){
-//     uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-//     printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
-// }
+static void aep_handler_debug_erip(){
+    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
+}
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
     /* the next apic attack */
     apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
-    
+
+    aep_handler_debug_erip();
+
     /* code for debugging purporse */
-    // aep_handler_debug_erip(); 
-    aep_handler_debug_delay_attack_test(); 
+    if (!__sgx_step_attack_triggered){  
+        // aep_handler_debug_delay_attack_test();
+        __sgx_step_attack_triggered = 1; 
+    }
 }
 
 
@@ -2126,9 +2127,14 @@ int main(int argc, char* argv[], char* envp[])
     ethread_args_t ethreads_args[econf->ethreads];
 
     /* sgx-step --> setup attack execution environment */
-    // attacker_config_runtime();
+    attacker_config_runtime();
     info_event("Registering AEX handler..."); 
     register_aep_cb(aep_cb_func);
+    info_event("(( APIC )) Establishing user space APIC mapping...");   
+    idt_t idt = {0};
+    map_idt(&idt);
+    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    apic_timer_oneshot(IRQ_VECTOR);
     /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2186,10 +2192,8 @@ int main(int argc, char* argv[], char* envp[])
     {
         /* FIXME: apic_timer can not be reset if it is interrupted */
         /* sgx-step --> */ 
-        if (__sgx_step_attack_triggered){
-            info_event("(( APIC )) Restoring the normal execution environment..."); 
-            apic_timer_deadline();
-        }
+        info_event("(( APIC )) Restoring the normal execution environment..."); 
+        apic_timer_deadline();
         /* <-- sgx-step */
         
         sgxlkl_host_verbose("oe_terminate_enclave... ");
@@ -2212,6 +2216,7 @@ int main(int argc, char* argv[], char* envp[])
         exit_status);
     
     
+    info("all is well; irq_count=%d; exiting..", __ss_irq_count);
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
 
