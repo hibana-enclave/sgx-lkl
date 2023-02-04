@@ -50,11 +50,8 @@
 #include "openenclave/internal/safecrt.h"
 
 // Nelly
-//#include "openenclave/include/openenclave/bits/sgx/sgxtypes.h"
-#include "/home/nelly/sgx-lkl-step-haohua/openenclave/include/openenclave/bits/sgx/sgxtypes.h"
-#include "/home/nelly/sgx-lkl-step-haohua/openenclave/include/openenclave/internal/sgx/td.h"
-//#include "/home/nelly/sgx-lkl/openenclave/enclave/core/sgx/td.h"
-
+#include "openenclave/bits/sgx/sgxtypes.h"
+#include "openenclave/internal/sgx/td.h"
 
 extern int vio_enclave_wakeup_event_channel(void);
 
@@ -254,6 +251,7 @@ int lthread_run(void)
     sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
 
     __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));
+    //    Nelly     
 
 
     /* Check if the scheduler was initialized. */

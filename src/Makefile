@@ -114,7 +114,7 @@ ${OE_ENCLAVE_CALLS}: sgxlkl.edl
 $(SGXLKL_OBJS): $(LIB_SGXLKL_BUILD)/sgxlkl/%.o: %.c | $(SGXLKL_LIBC_BLD_DIR)/include ${OE_ENCLAVE_CALLS}
 	@mkdir -p $(dir $@)
 	@echo "CC $<"
-	@$(CC) -I$(srcdir)/include $(CFLAGS_SGXLKL_ALL) $(CFLAGS_ENCLAVE) -c -o $@ $<
+	@$(CC) -I$(srcdir)/include -I$(OE_HOME)/include $(CFLAGS_SGXLKL_ALL) $(CFLAGS_ENCLAVE) -c -o $@ $<
 
 $(LIB_SGXLKL_BUILD)/sgxlkl/$(SGXLKL_STATIC_LIB): $(SGXLKL_OBJS) builddirs
 	@echo "AR rc $@"
