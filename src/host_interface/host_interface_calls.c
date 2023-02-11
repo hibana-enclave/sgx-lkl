@@ -111,36 +111,13 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 void sgxlkl_host_app_main_end(void)
 {
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
+    printf("[[ ENC ]] ************** Application End **************\n");
 } 
 
 void sgxlkl_host_app_main_start(void)
 {
     __sgx_lkl_aex_cnt_aux = 0; 
-}
-
-void sgxlkl_host_sgx_step_attack_setup(void)
-{
-    // /* random delay */  
-    // unsigned int attack_timer_range = SGX_STEP_ATTACK_RANDOM_HIGH_USEC - SGX_STEP_ATTACK_RANDOM_LOW_USEC + 1; 
-    // srand(time(NULL)); 
-    // unsigned int attack_timer_delay = SGX_STEP_ATTACK_RANDOM_LOW_USEC + rand() % attack_timer_range; 
-    // printf("[[ SGX-STEP ]] The host will trigger the SGX-STEP APIC attack in %.6lf second \n", attack_timer_delay / 1000.0); 
-    // /* Install timer_handler as the signal handler for SIGVTALRM */
-    // struct sigaction sa; 
-    // struct itimerval timer; 
-    // memset(&sa, 0, sizeof(sa));
-    // sa.sa_handler = &sgx_step_attack_signal_timer_handler; 
-    // sigaction(SIGVTALRM, &sa, NULL);   
-    // /* configure the timer to expire after attack_timer_delay mircosec... */
-    // timer.it_value.tv_sec = 0;
-    // timer.it_value.tv_usec = attack_timer_delay;
-    // timer.it_interval.tv_sec = 0; 
-    // timer.it_interval.tv_usec = 0; 
-    // /* start a virtual timer */
-    // setitimer(ITIMER_VIRTUAL, &timer, NULL);  
-
-
-    sgx_step_attack_signal_timer_handler(0); 
+    printf("[[ ENC ]] ************** Application Start **************\n");
 }
 
 void sgxlkl_host_hw_cpuid(

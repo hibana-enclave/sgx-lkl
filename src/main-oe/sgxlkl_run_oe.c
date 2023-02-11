@@ -77,8 +77,6 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define SGX_STEP_TIMER_INTERVAL 100 // sgx-step 
-
 extern char __sgxlklrun_text_segment_start;
 
 /* Function to initialize the host interface */
@@ -131,75 +129,12 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
-
-/* ================== ATTACKER IRQ/FAULT HANDLERS ================= */
-static int __sgx_step_attack_triggered = 0;
-
-void sgx_step_attack_signal_timer_handler(int signum){
-    // info_event("(( APIC )) Establishing user space APIC mapping (with kernel space handler)");   
-    // int vec = (apic_read(APIC_LVTT) & 0xff);
-    // apic_timer_oneshot(vec);
-}
-
-// static void aep_handler_debug_delay_attack_test(){
-//     gprsgx_region_t grpsgx; 
-//     edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t)); 
-//     if (__sgx_step_attack_triggered){
-//         printf("(( Host AEP ))::: r14=%ld\n", grpsgx.fields.r14);
-//     }
-// } 
-
-static void aep_handler_debug_erip(){
-    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
-}
-
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    /* the next apic attack */
-    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
-
-    aep_handler_debug_erip();
-
-    /* code for debugging purporse */
-    if (!__sgx_step_attack_triggered){  
-        // aep_handler_debug_delay_attack_test();
-        __sgx_step_attack_triggered = 1; 
-    }
+    //uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    //printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
 }
-
-
-/* Called upon SIGSEGV caused by untrusted page tables. */
-// void fault_handler(int signal)
-// {
-// 	info("Caught fault %d! Restoring enclave page permissions..", signal);
-// }
-
-
-/* ================== ATTACKER INIT/SETUP ================= */
-
-/* Configure and check attacker untrusted runtime environment. */
-void attacker_config_runtime(void)
-{
-    ASSERT( !claim_cpu(VICTIM_CPU) );
-    ASSERT( !prepare_system_for_benchmark(PSTATE_PCT) );
-    // ASSERT(signal(SIGSEGV, fault_handler) != SIG_ERR);
-    print_system_settings();
-
-    if (isatty(fileno(stdout)))
-    {
-        info("WARNING: interactive terminal detected; known to cause ");
-        info("unstable timer intervals! Use stdout file redirection for ");
-        info("precise single-stepping results...");
-    }
-
-    register_enclave_info();
-    print_enclave_info();
-}
-
-
-
 
 static void version()
 {
@@ -2127,14 +2062,8 @@ int main(int argc, char* argv[], char* envp[])
     ethread_args_t ethreads_args[econf->ethreads];
 
     /* sgx-step --> setup attack execution environment */
-    attacker_config_runtime();
     info_event("Registering AEX handler..."); 
     register_aep_cb(aep_cb_func);
-    info_event("(( APIC )) Establishing user space APIC mapping...");   
-    idt_t idt = {0};
-    map_idt(&idt);
-    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-    apic_timer_oneshot(IRQ_VECTOR);
     /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2189,13 +2118,7 @@ int main(int argc, char* argv[], char* envp[])
     // Only try to destroy enclave if all ethreads successfully exited. If we
     // call oe_terminate_enclave otherwise, it may sefault.
     if (oe_enclave && exited_ethread_count == econf->ethreads)
-    {
-        /* FIXME: apic_timer can not be reset if it is interrupted */
-        /* sgx-step --> */ 
-        info_event("(( APIC )) Restoring the normal execution environment..."); 
-        apic_timer_deadline();
-        /* <-- sgx-step */
-        
+    {   
         sgxlkl_host_verbose("oe_terminate_enclave... ");
         oe_terminate_enclave(oe_enclave);
         sgxlkl_host_verbose_raw("done\n");

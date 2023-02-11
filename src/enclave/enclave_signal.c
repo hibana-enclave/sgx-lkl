@@ -26,21 +26,6 @@
                                 0F A2   CPUID   <https://mudongliang.github.io/x86/html/file_module_x86_id_45.html>
                                 https://github.com/lsds/openenclave/blob/feature.sgx-lkl/include/openenclave/internal/cpuid.h#L9
                               */ 
-
-/* H(x) = (x * 229) mod 677 */
-static const int sgx_step_attack_signal_hash_int = 229; 
-static const int sgx_step_attack_signal_hash_mod = 677;
-
-//static const int sgx_step_attack_signal_hash_key = 3559; // (0xDE7)
-static const int sgx_step_attack_signal_hash_target = 580; 
-
-// static const int sgx_lkl_app_start_hash_key = 114514; // (0x1BF52) 
-static const int sgx_lkl_app_start_hash_target = 111; 
-
-// static const int sgx_lkl_app_end_hash_key = ; 191981 // (0x2EDED)
-static const int sgx_lkl_app_end_hash_target = 623; 
-
-
 /* Mapping between OE and hardware exception */
 struct oe_hw_exception_map
 {
@@ -256,22 +241,7 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
     {   
         /* allow attack from anywhere in the in-enclave application by settng up the APIC timer */
         case UD2_OPCODE:
-            printf("[[ SGX-STEP ]] Encounter ud2 instruction \n"); 
-            // FIXME: hashing is a good way to uniquely identify that `ud2` is truely issued by the attacker 
-            // (make sure that the context of r11 must be saved)
-            int hash = (context->r11 * sgx_step_attack_signal_hash_int) % sgx_step_attack_signal_hash_mod; 
-            if (hash == sgx_step_attack_signal_hash_target){
-                /* leave the enclave by OCALL and send the first APIC signal in host handler */
-                sgxlkl_host_sgx_step_attack_setup();
-            }else if (hash == sgx_lkl_app_start_hash_target){
-                printf("[[ ENC ]] ************** Application Start **************\n");
-                sgxlkl_host_app_main_start();
-            }else if (hash == sgx_lkl_app_end_hash_target){
-                printf("[[ ENC ]] ************** Application End **************\n");
-                sgxlkl_host_app_main_end(); 
-            }else{
-                sgxlkl_fail("Encountered an illegal instruction inside enclave (opcode=0x%x [%s])\n", opcode, "ud2");
-            }
+            sgxlkl_fail("Encountered an illegal instruction inside enclave (opcode=0x%x [%s])\n", opcode, "ud2");
             break; 
         case OE_CPUID_OPCODE:
             rax = 0xaa, rbx = 0xbb, rcx = 0xcc, rdx = 0xdd;
