@@ -124,6 +124,9 @@ static void _enter_user_space(
     args.ua_sgxlkl_error = sgxlkl_error;
     args.ua_sgxlkl_fail = sgxlkl_fail;
     args.ua_enclave_mmap = enclave_mmap;
+    args.ua_sgxlkl_app_main_start_notify = sgxlkl_app_main_start_notify; 
+    args.ua_sgxlkl_app_main_end_notify = sgxlkl_app_main_end_notify; 
+
     args.argc = argc;
     args.argv = argv;
     args.stack = stack;
