@@ -66,6 +66,8 @@
 #define SGXLKL_INFO_STRING "SGX-LKL (OE) %s (%s) LKL %s %s\n"
 #define SGXLKL_LAUNCHER_NAME "sgx-lkl-run-oe"
 
+#define SGX_GPRSGX_R14_OFFSET       112
+
 // One first empty block for bootloaders, and offset in second block
 #define EXT4_MAGIC_OFFSET (1024 + 0x38)
 
@@ -129,11 +131,32 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
+int __sgx_step_attack_triggered = 0; 
+
+void sgx_step_attack_signal_timer_handler(int signum){
+    // info_event("(( APIC )) Establishing user space APIC mapping (with kernel space handler)");   
+    // int vec = (apic_read(APIC_LVTT) & 0xff);
+    // apic_timer_oneshot(vec);
+
+
+    // FIXME: don't try to read SSA region at this point. 
+    //        since SSA is only filled when AEX happend (only read at AEP)
+
+    // __sgx_step_attack_triggered = 1; 
+    // printf("attack~~\n"); 
+    // uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
+    // printf("(( Attack Host AEP )):: enclave R14=%#lx ^^ \n", er); 
+}
+
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    //uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    //printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
+    // if (__sgx_step_attack_triggered){
+    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    //     // printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
+    // }
+    uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
+    printf("(( Host AEP )):: enclave R14=%#lx ^^ \n", er);
 }
 
 static void version()
