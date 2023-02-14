@@ -77,6 +77,8 @@
 
 #define RDFSBASE_LEN 5 // Instruction length
 
+#define SGX_STEP_TIMER_INTERVAL 100
+
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 extern char __sgxlklrun_text_segment_start;
@@ -134,15 +136,14 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 int __sgx_step_attack_triggered = 0; 
 
 void sgx_step_attack_signal_timer_handler(int signum){
-    // info_event("(( APIC )) Establishing user space APIC mapping (with kernel space handler)");   
-    // int vec = (apic_read(APIC_LVTT) & 0xff);
-    // apic_timer_oneshot(vec);
-
-
     // FIXME: don't try to read SSA region at this point. 
     //        since SSA is only filled when AEX happend (only read at AEP)
-
-    // __sgx_step_attack_triggered = 1; 
+    __sgx_step_attack_triggered = 1; 
+    idt_t idt = {0};
+    info_event("Establishing user-space APIC/IDT mappings");
+    map_idt(&idt);
+    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    apic_timer_oneshot(IRQ_VECTOR);
     // printf("attack~~\n"); 
     // uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
     // printf("(( Attack Host AEP )):: enclave R14=%#lx ^^ \n", er); 
@@ -151,10 +152,7 @@ void sgx_step_attack_signal_timer_handler(int signum){
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
 void aep_cb_func(void)
 {
-    // if (__sgx_step_attack_triggered){
-    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    //     // printf("(( Host AEP )):: enclave RIP=%#lx ^^ \n", erip);
-    // }
+    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
     uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
     printf("(( Host AEP )):: enclave R14=%#lx ^^ \n", er);
 }
@@ -2124,6 +2122,11 @@ int main(int argc, char* argv[], char* envp[])
         pthread_setname_np(sgxlkl_threads[i], "ENCLAVE");
     }
 
+    if (__sgx_step_attack_triggered){
+        // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+        apic_timer_deadline(); 
+    }
+
     // Wait for the terminating ethread to exit the enclave
     pthread_mutex_lock(&terminating_ethread_exited_mtx);
     // Only wait if the enclave has not exited yet
@@ -2160,7 +2163,7 @@ int main(int argc, char* argv[], char* envp[])
         "SGX-LKL-OE exit: exited_ethread_count=%i exit_status=%i\n",
         exited_ethread_count,
         exit_status);
-    
+
     
     info("all is well; irq_count=%d; exiting..", __ss_irq_count);
     sgx_lkl_print_app_main_aex_count(); 
