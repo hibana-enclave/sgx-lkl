@@ -133,29 +133,29 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
-int __sgx_step_attack_triggered = 0; 
+// int __sgx_step_attack_triggered = 0; 
 
-void sgx_step_attack_signal_timer_handler(int signum){
-    // FIXME: don't try to read SSA region at this point. 
-    //        since SSA is only filled when AEX happend (only read at AEP)
-    __sgx_step_attack_triggered = 1; 
-    idt_t idt = {0};
-    info_event("Establishing user-space APIC/IDT mappings");
-    map_idt(&idt);
-    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-    apic_timer_oneshot(IRQ_VECTOR);
-    // printf("attack~~\n"); 
-    // uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
-    // printf("(( Attack Host AEP )):: enclave R14=%#lx ^^ \n", er); 
-}
+// void sgx_step_attack_signal_timer_handler(int signum){
+//     // FIXME: don't try to read SSA region at this point. 
+//     //        since SSA is only filled when AEX happend (only read at AEP)
+//     __sgx_step_attack_triggered = 1; 
+//     idt_t idt = {0};
+//     info_event("Establishing user-space APIC/IDT mappings");
+//     map_idt(&idt);
+//     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+//     apic_timer_oneshot(IRQ_VECTOR);
+//     // printf("attack~~\n"); 
+//     // uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
+//     // printf("(( Attack Host AEP )):: enclave R14=%#lx ^^ \n", er); 
+// }
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
-void aep_cb_func(void)
-{
-    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
-    uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
-    printf("(( Host AEP )):: enclave R14=%#lx ^^ \n", er);
-}
+// void aep_cb_func(void)
+// {
+//     apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
+//     uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
+//     printf("(( Host AEP )):: enclave R14=%#lx ^^ \n", er);
+// }
 
 static void version()
 {
@@ -2083,8 +2083,8 @@ int main(int argc, char* argv[], char* envp[])
     ethread_args_t ethreads_args[econf->ethreads];
 
     /* sgx-step --> setup attack execution environment */
-    info_event("Registering AEX handler..."); 
-    register_aep_cb(aep_cb_func);
+    // info_event("Registering AEX handler..."); 
+    // register_aep_cb(aep_cb_func);
     /* <-- sgx-step */
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2122,10 +2122,10 @@ int main(int argc, char* argv[], char* envp[])
         pthread_setname_np(sgxlkl_threads[i], "ENCLAVE");
     }
 
-    if (__sgx_step_attack_triggered){
-        // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-        apic_timer_deadline(); 
-    }
+    // if (__sgx_step_attack_triggered){
+    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    //     apic_timer_deadline(); 
+    // }
 
     // Wait for the terminating ethread to exit the enclave
     pthread_mutex_lock(&terminating_ethread_exited_mtx);
