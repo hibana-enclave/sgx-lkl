@@ -34,3 +34,6 @@ user/stubs.o
 
 .vscode/*
 !.vscode/extensions.json
+openenclave/
+sgx-lkl-musl/
+sgx-step/
