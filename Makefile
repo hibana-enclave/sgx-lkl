@@ -196,6 +196,7 @@ clean:
 	+${MAKE} -C ${SGXLKL_ROOT}/third_party clean || true
 	+${MAKE} -C ${SGXLKL_ROOT}/third_party distclean || true
 	+${MAKE} -C src clean || true
+	+${MAKE} -C user clean || true 
 	rm -f ${HOST_MUSL}/config.mak
 	rm -f ${SGXLKL_LIBC_SRC_DIR}/config.mak
 
@@ -209,5 +210,6 @@ distclean:
 	+${MAKE} -C ${SGXLKL_ROOT}/third_party clean || true
 	+${MAKE} -C ${SGXLKL_ROOT}/third_party distclean || true
 	+${MAKE} -C src clean || true
+	+${MAKE} -C user clean || true 
 	rm -f ${HOST_MUSL}/config.mak
 	rm -f ${SGXLKL_LIBC_SRC_DIR}/config.mak
