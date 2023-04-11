@@ -22,20 +22,17 @@ sgxlkl_enclave_state_t sgxlkl_enclave_state = {0};
 
 void sgxlkl_app_main_end_notify()
 {
-    sgxlkl_error("This part is unreachable due to user space stubs. \n"); 
-    // sgxlkl_host_app_main_end(); 
+    sgxlkl_host_app_main_end(); 
 }
 
 void sgxlkl_app_main_start_notify()
 {
-    sgxlkl_error("This part is unreachable due to user space stubs. \n"); 
-    // sgxlkl_host_app_main_start(); 
+    sgxlkl_host_app_main_start(); 
 }
 
 void sgxlkl_app_sgx_step_attack_notify()
-{
-    sgxlkl_error("This part is unreachable due to user space stubs. \n"); 
-    // sgxlkl_host_sgx_step_attack_setup(); 
+{ 
+    sgxlkl_host_sgx_step_attack_setup(); 
 }
 
 
