@@ -54,6 +54,10 @@ void sgxlkl_app_main_end_notify(void)
     return __sgxlkl_userargs->ua_sgxlkl_app_main_end_notify(); 
 }
 
+void sgxlkl_app_sgx_step_attack_notify(void)
+{
+    return __sgxlkl_userargs->ua_sgxlkl_app_sgx_step_attack_notify(); 
+}
 
 void sgxlkl_warn(const char* msg, ...)
 {

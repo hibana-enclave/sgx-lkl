@@ -126,6 +126,7 @@ static void _enter_user_space(
     args.ua_enclave_mmap = enclave_mmap;
     args.ua_sgxlkl_app_main_start_notify = sgxlkl_app_main_start_notify; 
     args.ua_sgxlkl_app_main_end_notify = sgxlkl_app_main_end_notify; 
+    args.ua_sgxlkl_app_sgx_step_attack_notify = sgxlkl_app_sgx_step_attack_notify; 
 
     args.argc = argc;
     args.argv = argv;
