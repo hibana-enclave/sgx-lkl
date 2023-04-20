@@ -52,6 +52,10 @@
 #include "libsgxstep/enclave.h"
 #include "libsgxstep/debug.h"
 #include "libsgxstep/pt.h"
+#include "libsgxstep/config.h"
+#include "libsgxstep/apic.h"
+#include "libsgxstep/sched.h"
+#include "libsgxstep/idt.h"
 
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
