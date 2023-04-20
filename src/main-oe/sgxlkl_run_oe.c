@@ -129,8 +129,7 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
-// int __sgx_step_attack_triggered = 0; 
-
+// int __sgx_step_attack_triggered = 0; // haohua 
 // void sgx_step_attack_signal_timer_handler(int signum){
 //     // FIXME: don't try to read SSA region at this point. 
 //     //        since SSA is only filled when AEX happend (only read at AEP)
@@ -145,7 +144,7 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 //     // printf("(( Attack Host AEP )):: enclave R14=%#lx ^^ \n", er); 
 // }
 
-/* Called before resuming the enclave after an Asynchronous Enclave eXit. */
+/* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 void aep_cb_func(void)
 {
     gprsgx_region_t gprsgx = {0};
@@ -2116,7 +2115,7 @@ int main(int argc, char* argv[], char* envp[])
         pthread_setname_np(sgxlkl_threads[i], "ENCLAVE");
     }
 
-    apic_timer_deadline();  // haohua 
+    // apic_timer_deadline();  // haohua 
 
     // Wait for the terminating ethread to exit the enclave
     pthread_mutex_lock(&terminating_ethread_exited_mtx);
