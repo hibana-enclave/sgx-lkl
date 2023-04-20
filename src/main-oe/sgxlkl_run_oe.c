@@ -48,12 +48,10 @@
 #include "host/sgxlkl_u.h"
 
 #include <sys/syscall.h>
-#include "openenclave/host.h"
+
 #include "libsgxstep/enclave.h"
-#include "libsgxstep/config.h"
-#include "libsgxstep/apic.h"
-#include "libsgxstep/sched.h"
-#include "libsgxstep/idt.h"
+#include "libsgxstep/debug.h"
+#include "libsgxstep/pt.h"
 
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
@@ -65,8 +63,6 @@
 
 #define SGXLKL_INFO_STRING "SGX-LKL (OE) %s (%s) LKL %s %s\n"
 #define SGXLKL_LAUNCHER_NAME "sgx-lkl-run-oe"
-
-#define SGX_GPRSGX_R14_OFFSET       112
 
 // One first empty block for bootloaders, and offset in second block
 #define EXT4_MAGIC_OFFSET (1024 + 0x38)
@@ -150,12 +146,12 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 // }
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. */
-// void aep_cb_func(void)
-// {
-//     apic_timer_irq(SGX_STEP_TIMER_INTERVAL);
-//     uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
-//     printf("(( Host AEP )):: enclave R14=%#lx ^^ \n", er);
-// }
+void aep_cb_func(void)
+{
+    gprsgx_region_t gprsgx = {0};
+    edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t));
+    dump_gprsgx_region(&gprsgx);
+}
 
 static void version()
 {
@@ -2082,10 +2078,8 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
-    /* sgx-step --> setup attack execution environment */
-    // info_event("Registering AEX handler..."); 
-    // register_aep_cb(aep_cb_func);
-    /* <-- sgx-step */
+    info_event("Registering AEX handler...");   // haohua
+    register_aep_cb(aep_cb_func);               // haohua 
 
     for (int i = 0; i < econf->ethreads; i++)
     {
@@ -2122,10 +2116,7 @@ int main(int argc, char* argv[], char* envp[])
         pthread_setname_np(sgxlkl_threads[i], "ENCLAVE");
     }
 
-    // if (__sgx_step_attack_triggered){
-    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    //     apic_timer_deadline(); 
-    // }
+    apic_timer_deadline();  // haohua 
 
     // Wait for the terminating ethread to exit the enclave
     pthread_mutex_lock(&terminating_ethread_exited_mtx);
