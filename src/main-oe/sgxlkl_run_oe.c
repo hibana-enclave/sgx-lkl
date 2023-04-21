@@ -153,8 +153,21 @@ void aep_cb_func(void)
 {
     gprsgx_region_t gprsgx = {0};
     edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t));
-    dump_gprsgx_region(&gprsgx);
+    // dump_gprsgx_region(&gprsgx);
+
+    if (gprsgx.exitinfo >> 31){ // 
+        printf("[[ AEP DEBUG ]]: EXIT_TYPE => 0x%x    |    VECTOR => 0x%x\n", 
+            (gprsgx.exitinfo >> 8) & (0x7), 
+            (gprsgx.exitinfo & (0xff))
+        );    
+    }else{
+        printf("[[ AEP DEBUG ]]: unsupported AEX EXITINFO => 0x%x. \n", gprsgx.exitinfo); 
+    }   
 }
+
+// 
+// 0x 1111 1111 1111 1111 1111 1111 1111 1111 
+
 
 static void version()
 {
