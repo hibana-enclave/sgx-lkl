@@ -21,7 +21,39 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nox2apic iomem=relaxed no_timer_check n
 Since MSR kernel module is not auto-loaded, if sgx-step reports error like `/dev/cpu/x/msr` no such file or directory, load the MSR module explicitly  
 
 ```
-sudo modprobe msr 
+sudo modprobe msr allow_writes=on
+```
+
+Then load sgx-step's kernel module, the outputs 
+
+```
+make -C /lib/modules/5.4.204/build M=/home/nelly/sgx-lkl/sgx-step/kernel clean
+make[1]: Entering directory '/usr/src/linux-headers-5.4.204'
+  CLEAN   /home/nelly/sgx-lkl/sgx-step/kernel/Module.symvers
+make[1]: Leaving directory '/usr/src/linux-headers-5.4.204'
+sudo rmmod sgx-step.ko || true
+make -C /lib/modules/5.4.204/build M=/home/nelly/sgx-lkl/sgx-step/kernel modules
+make[1]: Entering directory '/usr/src/linux-headers-5.4.204'
+  CC [M]  /home/nelly/sgx-lkl/sgx-step/kernel/sgxstep.o
+  LD [M]  /home/nelly/sgx-lkl/sgx-step/kernel/sgx-step.o
+  Building modules, stage 2.
+  MODPOST 1 modules
+  CC [M]  /home/nelly/sgx-lkl/sgx-step/kernel/sgx-step.mod.o
+  LD [M]  /home/nelly/sgx-lkl/sgx-step/kernel/sgx-step.ko
+make[1]: Leaving directory '/usr/src/linux-headers-5.4.204'
+sudo modprobe -a isgx msr || true
+sudo insmod sgx-step.ko
+sudo dmesg | tail
+[  358.368570] [sgx-step] original IDT: 0xfffffe0000000000 with size 4096
+[  358.368575] [sgx-step] original APIC_LVTT=0x400ec/TDCR=0x0)
+[  358.368677] [sgx-step] mapped 2 pinned user ISR memory pages to kernel virtual address 0xffffb112802d4000
+[  359.136222] [sgx-step] restored IDT: 0xfffffe0000000000 with size 4096
+[  359.136234] [sgx-step] restored APIC_LVTT=0x400ec/TDCR=0x0)
+[  359.136234] [sgx-step] restoring APIC timer tsc-deadline operation
+[  537.996180] [sgx-step] kernel module unloaded
+[  541.215257] [sgx-step] listening on /dev/sgx-step
+[  576.594917] [sgx-step] kernel module unloaded
+[  579.674030] [sgx-step] listening on /dev/sgx-step
 ```
 
 

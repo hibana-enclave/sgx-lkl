@@ -133,25 +133,24 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
-// int __sgx_step_attack_triggered = 0; // haohua 
-// void sgx_step_attack_signal_timer_handler(int signum){
-//     // FIXME: don't try to read SSA region at this point. 
-//     //        since SSA is only filled when AEX happend (only read at AEP)
-//     __sgx_step_attack_triggered = 1; 
-//     idt_t idt = {0};
-//     info_event("Establishing user-space APIC/IDT mappings");
-//     map_idt(&idt);
-//     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-//     apic_timer_oneshot(IRQ_VECTOR);
-//     // printf("attack~~\n"); 
-//     // uint64_t er = edbgrd_ssa_gprsgx(SGX_GPRSGX_R14_OFFSET); 
-//     // printf("(( Attack Host AEP )):: enclave R14=%#lx ^^ \n", er); 
-// }
+int __sgx_step_attack_triggered = 0; // haohua 
+void sgx_step_attack_signal_timer_handler(int signum){
+    // FIXME: don't try to read SSA region at this point. 
+    //        since SSA is only filled when AEX happend (only read at AEP)
+    __sgx_step_attack_triggered = 1; 
+    idt_t idt = {0};
+    info_event("Establishing user-space APIC/IDT mappings");
+    map_idt(&idt);
+    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    apic_timer_oneshot(IRQ_VECTOR);
+}
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 void aep_cb_func(void)
 {
-
+    if (__sgx_step_attack_triggered){
+        apic_timer_irq( SGX_STEP_TIMER_INTERVAL );
+    }
 }
 
 // 
@@ -2098,7 +2097,8 @@ int main(int argc, char* argv[], char* envp[])
         ethreads_args[i].oe_enclave = oe_enclave;
 
         info_event("Registering AEX handler...");   // haohua
-        register_aep_cb(aep_cb_func);               // haohua 
+        register_aep_cb(aep_cb_func);               // haohua
+        sgx_step_attack_signal_timer_handler(-1);  
 
         /* First ethread will pass the enclave configuration and
          * settings */
