@@ -194,7 +194,6 @@ clean:
 	+${MAKE} -C ${LKL} distclean || true
 	+${MAKE} -C ${LKL}/tools/lkl clean || true
 	+${MAKE} -C ${SGXLKL_ROOT}/third_party clean || true
-	+${MAKE} -C ${SGXLKL_ROOT}/third_party distclean || true
 	+${MAKE} -C src clean || true
 	+${MAKE} -C user clean || true 
 	rm -f ${HOST_MUSL}/config.mak
