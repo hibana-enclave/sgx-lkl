@@ -7,6 +7,21 @@
 
 --- 
 
+
+## Demo 
+
+```
+# load sgx-step apic kernel module 
+cd sgx-lkl/sgx-step/kernel
+sudo make clean load
+
+# see strongbox-test-cases 
+cd c/nbench
+sudo make 
+sudo make run-hw
+```
+
+
 ## Introduction to SGX-Step 
 
 SGX-Step is an open-source framework to facilitate side-channel attack research on Intel x86 processors in general and Intel SGX platforms in particular.
