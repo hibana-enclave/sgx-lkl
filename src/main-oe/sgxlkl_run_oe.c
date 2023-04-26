@@ -2083,9 +2083,6 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
-    info_event("Registering AEX handler...");   // haohua
-    register_aep_cb(aep_cb_func);               // haohua 
-
     for (int i = 0; i < econf->ethreads; i++)
     {
         pthread_attr_init(&eattr);
@@ -2099,6 +2096,9 @@ int main(int argc, char* argv[], char* envp[])
         ethreads_args[i].ethread_id = i;
         ethreads_args[i].shm = &sgxlkl_host_state.shared_memory;
         ethreads_args[i].oe_enclave = oe_enclave;
+
+        info_event("Registering AEX handler...");   // haohua
+        register_aep_cb(aep_cb_func);               // haohua 
 
         /* First ethread will pass the enclave configuration and
          * settings */
@@ -2121,7 +2121,7 @@ int main(int argc, char* argv[], char* envp[])
         pthread_setname_np(sgxlkl_threads[i], "ENCLAVE");
     }
 
-    // apic_timer_deadline();  // haohua 
+    apic_timer_deadline();  // haohua 
 
     // Wait for the terminating ethread to exit the enclave
     pthread_mutex_lock(&terminating_ethread_exited_mtx);
