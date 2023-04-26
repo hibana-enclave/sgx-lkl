@@ -12,6 +12,18 @@
 SGX-Step is an open-source framework to facilitate side-channel attack research on Intel x86 processors in general and Intel SGX platforms in particular.
 Visit <https://github.com/jovanbulck/sgx-step> to learn more. 
 
+For example, add the following line to `/etc/default/grub` to allow sgx-step configue its custom apic module. 
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nox2apic iomem=relaxed no_timer_check nosmep nosmap clearcpuid=514 pti=off isolcpus=3 nmi_watchdog=0 rcupdate.rcu_cpu_stall_suppress=1 msr.allow_writes=on"
+```
+
+Since MSR kernel module is not auto-loaded, if sgx-step reports error like `/dev/cpu/x/msr` no such file or directory, load the MSR module explicitly  
+
+```
+sudo modprobe msr 
+```
+
 
 ## Introduction to SGX-LKL
 
