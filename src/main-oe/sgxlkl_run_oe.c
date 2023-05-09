@@ -152,11 +152,12 @@ void attacker_config_runtime(void)
 }
 
 /**************************************************************************************************************************/
-int __sgx_step_attack_triggered = 0; // haohua 
+int __sgx_step_apic_triggered = 0; // apic timer attack is configure  
+
 void sgx_step_attack_signal_timer_handler(int signum){
     // FIXME: don't try to read SSA region at this point. 
     //        since SSA is only filled when AEX happend (only read at AEP)
-    __sgx_step_attack_triggered = 1;
+    __sgx_step_apic_triggered = 1;
     info_event("Establishing user-space APIC/IDT mappings"); 
     idt_t idt = {0};
     map_idt(&idt);
