@@ -132,14 +132,33 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 #endif
 
+
+/* Configure and check attacker untrusted runtime environment. */
+void attacker_config_runtime(void)
+{
+    ASSERT( !claim_cpu(VICTIM_CPU) );
+    ASSERT( !prepare_system_for_benchmark(PSTATE_PCT) );
+    print_system_settings();
+
+    if (isatty(fileno(stdout)))
+    {
+        info("WARNING: interactive terminal detected; known to cause ");
+        info("unstable timer intervals! Use stdout file redirection for ");
+        info("precise single-stepping results...");
+    }
+
+    register_enclave_info();
+    print_enclave_info();
+}
+
 /**************************************************************************************************************************/
 int __sgx_step_attack_triggered = 0; // haohua 
 void sgx_step_attack_signal_timer_handler(int signum){
     // FIXME: don't try to read SSA region at this point. 
     //        since SSA is only filled when AEX happend (only read at AEP)
-    __sgx_step_attack_triggered = 1; 
+    __sgx_step_attack_triggered = 1;
+    info_event("Establishing user-space APIC/IDT mappings"); 
     idt_t idt = {0};
-    info_event("Establishing user-space APIC/IDT mappings");
     map_idt(&idt);
     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
     apic_timer_oneshot(IRQ_VECTOR);
@@ -148,12 +167,11 @@ void sgx_step_attack_signal_timer_handler(int signum){
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 void aep_cb_func(void)
 {
-    if (__sgx_step_attack_triggered){
-        apic_timer_irq( SGX_STEP_TIMER_INTERVAL );
-    }
+    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
+    apic_timer_irq(50);
 }
 
-// 
 // 0x 1111 1111 1111 1111 1111 1111 1111 1111 
 
 
@@ -2082,6 +2100,11 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
+    // start attacking when creating etrhead 
+    info_event("Registering AEX handler...");                           // haohua
+    attacker_config_runtime();                                          // haohua             
+    register_aep_cb(aep_cb_func);                                       // haohua
+
     for (int i = 0; i < econf->ethreads; i++)
     {
         pthread_attr_init(&eattr);
@@ -2095,10 +2118,6 @@ int main(int argc, char* argv[], char* envp[])
         ethreads_args[i].ethread_id = i;
         ethreads_args[i].shm = &sgxlkl_host_state.shared_memory;
         ethreads_args[i].oe_enclave = oe_enclave;
-
-        info_event("Registering AEX handler...");   // haohua
-        register_aep_cb(aep_cb_func);               // haohua
-        sgx_step_attack_signal_timer_handler(-1);  
 
         /* First ethread will pass the enclave configuration and
          * settings */
@@ -2121,8 +2140,6 @@ int main(int argc, char* argv[], char* envp[])
         pthread_setname_np(sgxlkl_threads[i], "ENCLAVE");
     }
 
-    apic_timer_deadline();  // haohua 
-
     // Wait for the terminating ethread to exit the enclave
     pthread_mutex_lock(&terminating_ethread_exited_mtx);
     // Only wait if the enclave has not exited yet
@@ -2137,6 +2154,9 @@ int main(int argc, char* argv[], char* envp[])
     int exit_status = enclave_return_status;
     pthread_mutex_unlock(&terminating_ethread_exited_mtx);
 
+    // Turn off sgx-step APIC local timer only if the ethread has exited (after pthread_cond_wait)
+    apic_timer_deadline();  // haohua 
+    
     // Only try to destroy enclave if all ethreads successfully exited. If we
     // call oe_terminate_enclave otherwise, it may sefault.
     if (oe_enclave && exited_ethread_count == econf->ethreads)

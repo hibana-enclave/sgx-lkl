@@ -32,7 +32,7 @@ void sgxlkl_app_main_start_notify()
 
 void sgxlkl_app_sgx_step_attack_notify()
 { 
-    sgxlkl_host_sgx_step_attack_setup(); 
+    // sgxlkl_host_sgx_step_attack_setup(); 
 }
 
 
