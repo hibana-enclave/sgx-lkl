@@ -155,22 +155,23 @@ void attacker_config_runtime(void)
 int __sgx_step_apic_triggered = 0; // apic timer attack is configure  
 
 void sgx_step_attack_signal_timer_handler(int signum){
-    // FIXME: don't try to read SSA region at this point. 
-    //        since SSA is only filled when AEX happend (only read at AEP)
+    printf("[ STRONGBOX ] attack now !\n");
+    // info_event("Establishing user-space APIC/IDT mappings"); 
     __sgx_step_apic_triggered = 1;
-    info_event("Establishing user-space APIC/IDT mappings"); 
-    idt_t idt = {0};
-    map_idt(&idt);
-    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-    apic_timer_oneshot(IRQ_VECTOR);
+    // idt_t idt = {0};
+    // map_idt(&idt);
+    // install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    // apic_timer_oneshot(IRQ_VECTOR);
 }
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 void aep_cb_func(void)
 {
-    uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
-    apic_timer_irq(50);
+    if (__sgx_step_apic_triggered){
+        uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+        printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
+        //apic_timer_irq(50);
+    }
 }
 
 // 0x 1111 1111 1111 1111 1111 1111 1111 1111 

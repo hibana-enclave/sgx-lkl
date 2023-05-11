@@ -14,8 +14,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define SGX_STEP_ATTACK_RANDOM_LOW_USEC  500 
-#define SGX_STEP_ATTACK_RANDOM_HIGH_USEC 900 
+#define SGX_STEP_ATTACK_RANDOM_LOW_USEC  5000
+#define SGX_STEP_ATTACK_RANDOM_HIGH_USEC 5000
 
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
 extern unsigned int sgx_lkl_aex_cnt; 
@@ -123,7 +123,6 @@ void sgxlkl_host_app_main_start(void)
 
 void sgxlkl_host_sgx_step_attack_setup(void)
 {
-    printf("Hello from SGX-step Attacker\n"); 
     /* random delay */  
     unsigned int attack_timer_range = SGX_STEP_ATTACK_RANDOM_HIGH_USEC - SGX_STEP_ATTACK_RANDOM_LOW_USEC + 1; 
     // srand(time(NULL)); 
@@ -141,7 +140,6 @@ void sgxlkl_host_sgx_step_attack_setup(void)
     timer.it_value.tv_usec = attack_timer_delay % 1000;
     timer.it_interval.tv_sec = 0; 
     timer.it_interval.tv_usec = 0; 
-    /* start a virtual timer */
     setitimer(ITIMER_REAL, &timer, NULL);  
 }
 

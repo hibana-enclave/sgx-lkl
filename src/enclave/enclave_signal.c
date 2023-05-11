@@ -140,8 +140,6 @@ static uint64_t sgxlkl_enclave_signal_handler(
     uint16_t* instr_addr = ((uint16_t*)exception_record->context->rip);
     uint16_t opcode = instr_addr ? *instr_addr : 0;
 
-    printf("exception_record->code = %s\n ", exception_map[exception_record->code]); 
-
     /* Emulate illegal instructions in SGX hardware mode */
     if (exception_record->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
