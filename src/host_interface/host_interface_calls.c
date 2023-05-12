@@ -14,8 +14,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
-#define SGX_STEP_ATTACK_RANDOM_LOW_USEC  5000
-#define SGX_STEP_ATTACK_RANDOM_HIGH_USEC 5000
+#define SGX_STEP_ATTACK_RANDOM_LOW_USEC  100
+#define SGX_STEP_ATTACK_RANDOM_HIGH_USEC 100
 
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
 extern unsigned int sgx_lkl_aex_cnt; 
