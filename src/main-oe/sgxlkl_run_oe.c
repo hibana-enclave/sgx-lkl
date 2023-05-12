@@ -170,7 +170,7 @@ void aep_cb_func(void)
     if (__sgx_step_apic_triggered){
         uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
         printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
-        apic_timer_irq(100);
+        apic_timer_irq(61);
     }
 }
 
