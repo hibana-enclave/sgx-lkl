@@ -19,6 +19,7 @@
 
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
 extern unsigned int sgx_lkl_aex_cnt; 
+extern int __sgx_step_app_terminated; 
 
 extern void sgx_step_attack_signal_timer_handler(int signum); 
 
@@ -111,11 +112,13 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 void sgxlkl_host_app_main_end(void)
 {
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
+    __sgx_step_app_terminated = 1; 
     printf("[[ ENC ]] ************** Application End   **************\n");
 } 
 
 void sgxlkl_host_app_main_start(void)
 {
+    __sgx_step_app_terminated = 0; 
     __sgx_lkl_aex_cnt_aux = 0; 
     printf("[[ ENC ]] ************** Application Start **************\n");
 }
