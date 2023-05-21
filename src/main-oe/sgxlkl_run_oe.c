@@ -77,8 +77,6 @@
 
 #define RDFSBASE_LEN 5 // Instruction length
 
-#define SGX_STEP_TIMER_INTERVAL 100
-
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 extern char __sgxlklrun_text_segment_start;
@@ -153,24 +151,30 @@ void attacker_config_runtime(void)
 
 /**************************************************************************************************************************/
 int __sgx_step_apic_triggered = 0; // apic timer attack is configure  
+int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 
 void sgx_step_attack_signal_timer_handler(int signum){
     info_event(" STRONGBOX is attacking now !!!");
     info("Establishing user-space APIC/IDT mappings..."); 
-    __sgx_step_apic_triggered = 1;
     idt_t idt = {0};
     map_idt(&idt);
     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
     apic_timer_oneshot(IRQ_VECTOR);
+    __sgx_step_apic_triggered = 1;
 }
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
+const int SGX_STEP_INTERVAL = 80; 
+unsigned long long __aex_count = 0; 
+
+
 void aep_cb_func(void)
 {
-    if (__sgx_step_apic_triggered){
+    if (__sgx_step_apic_triggered && !__sgx_step_app_terminated){
         uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
         printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
-        apic_timer_irq(61);
+        __aex_count += 1; 
+        apic_timer_irq(SGX_STEP_INTERVAL);
     }
 }
 
@@ -2183,9 +2187,12 @@ int main(int argc, char* argv[], char* envp[])
         exit_status);
 
     
-    info("all is well; irq_count=%d; exiting..", __ss_irq_count);
+    info("[[ SGX-STEP ]] all is well; irq_count=%d; exiting..", __ss_irq_count);
+    info("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu (apic freq = %d)\n", __aex_count, SGX_STEP_INTERVAL); 
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
+
+
 
     return exit_status;
 }
