@@ -52,6 +52,11 @@
 // Nelly
 #include "openenclave/bits/sgx/sgxtypes.h"
 #include "openenclave/internal/sgx/td.h"
+#define PAGE_SIZE 4096
+#define SSA_XSAVE_XMM0_OFFSET 160
+#define SSA_XSAVE_XMM0_SIZE 16      // XMM0 register size is 16 bytes (128 bites)    
+#define SSA_XSAVE_YMM0_OFFSET 576   // 512 + 64 = 576 
+#define SSA_XSAVE_YMM0_SIZE 16      /// YMM0[255:128] register size is 16 bytse(128 bites), overall YMM0 is 32 bytes (256 bits)
 
 extern int vio_enclave_wakeup_event_channel(void);
 
@@ -222,35 +227,62 @@ int lthread_run(void)
     int dequeued;
 
     //    Nelly
-    //    printf("Start lthread modification\n");
-    sgxlkl_info("Start lthread modification Nelly\n");
+    /* initialize all extended registers */
+    sgxlkl_info("Initializing the XSAVE area in SSA area....\n");
+    /*
+      __asm__ __volatile__("pcmpeqw  %%xmm0, %%xmm0 \n"
+                        "pxor  %%xmm0, %%xmm0 \n"
+                        "movdqa %%xmm0, %%xmm1 \n"
+                        "movdqa %%xmm0, %%xmm2 \n"
+                        "movdqa %%xmm0, %%xmm3 \n"
+                        "movdqa %%xmm0, %%xmm4 \n"
+                        "movdqa %%xmm0, %%xmm5 \n"
+                        "movdqa %%xmm0, %%xmm6 \n"
+                        "movdqa %%xmm0, %%xmm7 \n"
+                        //"movdqa %%xmm0, %%xmm8 \n"
+                        //"movdqa %%xmm0, %%xmm9 \n"
+                        //"movdqa %%xmm0, %%xmm10 \n"
+                        //"movdqa %%xmm0, %%xmm11 \n"
+                        //"movdqa %%xmm0, %%xmm12 \n"
+                        //"movdqa %%xmm0, %%xmm13 \n"
+                        //"movdqa %%xmm0, %%xmm14 \n"
+                        "movdqa %%xmm0, %%xmm15" : : :);
+    */
+    
+    __asm__ __volatile__(
+                "VPCMPEQB %%ymm0, %%ymm0, %%ymm0 \n"
+                "VPCMPEQB %%ymm1, %%ymm1, %%ymm1 \n"
+                "VPCMPEQB %%ymm2, %%ymm2, %%ymm2 \n"
+                "VPCMPEQB %%ymm3, %%ymm3, %%ymm3 \n"
+                "VPCMPEQB %%ymm4, %%ymm4, %%ymm4 \n"
+                "VPCMPEQB %%ymm5, %%ymm5, %%ymm5 \n"
+                "VPCMPEQB %%ymm6, %%ymm6, %%ymm6 \n"
+                "VPCMPEQB %%ymm7, %%ymm7, %%ymm7 \n"
+                "VPCMPEQB %%ymm8, %%ymm8, %%ymm8 \n"
+                "VPCMPEQB %%ymm9, %%ymm9, %%ymm9 \n"
+                "VPCMPEQB %%ymm10, %%ymm10, %%ymm10 \n"
+                "VPCMPEQB %%ymm11, %%ymm11, %%ymm11 \n"
+                "VPCMPEQB %%ymm12, %%ymm12, %%ymm12 \n"
+                "VPCMPEQB %%ymm13, %%ymm13, %%ymm13 \n"
+                "VPCMPEQB %%ymm14, %%ymm14, %%ymm14 \n"
+                "VPCMPEQB %%ymm15, %%ymm15, %%ymm15 \n"
+                "movq %0, %%fs:24" : : "r"(ssaUrbp));//Shujie: save ssa base addr
 
+    /* use the YMM0 context state in SSA */ 
+    sgxlkl_info("Start lthread modification Nelly\n");
     oe_sgx_td_t* td = oe_sgx_get_td();
     sgxlkl_info("DEBUG td address: %p\n", td);
-
-    //    oe_thread_data_t base = td->base;
-
-    //    uint64_t td_self_addr = base.self_addr;
-    //    sgxlkl_info("DEBUG td self address: %p\n", td_self_addr);
-
-    //    sgx_tcs_t* tcs = (sgx_tcs_t*)(td_self_addr - (5 * 4096));
-    //    uint64_t * tcs_addr = ((uint64_t)td - (5 * 4096));
-
-    sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * 4096));
+    sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * PAGE_SIZE));
     sgxlkl_info("DEBUG tcs address: %p\n", tcs);
-    //    sgxlkl_info("DEBUG tcs cssa: %d\n", tcs->cssa);
 
-    //    sgxlkl_info("DEBUG start : %p\n", (uint64_t*)tcs+4088);
-    //    uint32_t cssa = tcs->cssa;
-    //    sgxlkl_info("DEBUG cssa : %d\n", cssa);
-
-    //    uint64_t* ssa_base_address_address = (void*)((uint64_t*)tcs + 1 *
-    //    4096);
-    sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184);
-    //    sgxlkl_info("DEBUG ssa base address: %p\n", ssa_base_address_address);
+    uint64_t xsave_ymm0_address = (uint64_t)tcs + PAGE_SIZE + SSA_XSAVE_YMM0_OFFSET; 
     sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
+    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_ymm0_address));
 
-    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));
+    // sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184);
+    // sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
+    // __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));
+
     //    Nelly     
 
 
