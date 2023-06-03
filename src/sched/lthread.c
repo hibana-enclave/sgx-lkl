@@ -228,7 +228,6 @@ int lthread_run(void)
 
     //    Nelly
     /* initialize all extended registers */
-    sgxlkl_info("Initializing the XSAVE area in SSA area....\n");
       __asm__ __volatile__("pcmpeqw  %%xmm0, %%xmm0 \n"
                         "pxor  %%xmm0, %%xmm0 \n"
                         "movdqa %%xmm0, %%xmm1 \n"
@@ -254,12 +253,15 @@ int lthread_run(void)
     sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * SSA_PAGE_SIZE));
     sgxlkl_info("DEBUG tcs address: %p\n", tcs);
 
-    uint64_t xsave_ymm0_address = (uint64_t)tcs + SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET; 
-    sgxlkl_info("DEBUG ssa ymm state address: %p\n", xsave_ymm0_address);
-    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_ymm0_address));        
-    // sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184);
-    // sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
-    // __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));
+    // sgxlkl_info("assigning SSA's XSAVE address to strongbox stack....\n");
+    // uint64_t xsave_ymm0_address = (uint64_t)tcs + SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET;
+    // sgxlkl_info("DEBUG ssa ymm state address: %p\n", xsave_ymm0_address);
+    // __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_ymm0_address));
+
+    sgxlkl_info("assigning SSA's GRR address to strongbox stack....\n");
+    sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184 + 1);
+    sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
+    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));
 
     //    Nelly     
 

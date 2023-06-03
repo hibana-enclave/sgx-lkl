@@ -1173,6 +1173,7 @@ void lkl_terminate(int exit_status)
             "Application runtime: %lld.%.9lds\n",
             runtime.tv_sec,
             runtime.tv_nsec);
+        sgxlkl_host_app_main_end(); 
     }
     /* sgx-step */
 

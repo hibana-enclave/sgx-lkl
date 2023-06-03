@@ -134,7 +134,7 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 /* Configure and check attacker untrusted runtime environment. */
 void attacker_config_runtime(void)
 {
-    ASSERT( !claim_cpu(VICTIM_CPU) );
+    // ASSERT( !claim_cpu(VICTIM_CPU) );
     ASSERT( !prepare_system_for_benchmark(PSTATE_PCT) );
     print_system_settings();
 
@@ -155,16 +155,11 @@ int __sgx_step_app_terminated = 0; // if the app stops (either normal terminatio
 
 void sgx_step_attack_signal_timer_handler(int signum){
     info_event(" STRONGBOX is attacking now !!!");
-    info("Establishing user-space APIC/IDT mappings..."); 
-    idt_t idt = {0};
-    map_idt(&idt);
-    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-    apic_timer_oneshot(IRQ_VECTOR);
     __sgx_step_apic_triggered = 1;
 }
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const int SGX_STEP_INTERVAL = 80; 
+const int SGX_STEP_INTERVAL = 90; 
 unsigned long long __aex_count = 0; 
 
 
@@ -2108,7 +2103,7 @@ int main(int argc, char* argv[], char* envp[])
 
     // start attacking when creating etrhead 
     info_event("Registering AEX handler...");                           // haohua
-    attacker_config_runtime();                                          // haohua             
+    // attacker_config_runtime();                                          // haohua             
     register_aep_cb(aep_cb_func);                                       // haohua
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2160,9 +2155,6 @@ int main(int argc, char* argv[], char* envp[])
     int exit_status = enclave_return_status;
     pthread_mutex_unlock(&terminating_ethread_exited_mtx);
 
-    // Turn off sgx-step APIC local timer only if the ethread has exited (after pthread_cond_wait)
-    apic_timer_deadline();  // haohua 
-    
     // Only try to destroy enclave if all ethreads successfully exited. If we
     // call oe_terminate_enclave otherwise, it may sefault.
     if (oe_enclave && exited_ethread_count == econf->ethreads)
@@ -2186,13 +2178,10 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
-    
     info("[[ SGX-STEP ]] all is well; irq_count=%d; exiting..", __ss_irq_count);
-    info("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu (apic freq = %d)\n", __aex_count, SGX_STEP_INTERVAL); 
+    info("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu (apic freq = %d)", __aex_count, SGX_STEP_INTERVAL); 
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
-
-
 
     return exit_status;
 }
