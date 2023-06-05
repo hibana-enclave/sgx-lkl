@@ -3,7 +3,13 @@
 ## Known Issues 
 ---
 
-> **Note**: For unknown reasons, the user space APIC mapping with custom user space IRQ handler could freeze the kernel. The solution is to use kernel space IRQ handler for SGX-step signals, read this [commit](https://github.com/jovanbulck/sgx-step/commit/b6a3181724c0e13cb2237504987ac8285488b040#diff-e4d66bd49b852f9a1c9f8bfefa26a011f90f9f9d3c5dc35fa280d8522bfa0525L206). One of the underlying reasons may be purposed in this [PR](https://github.com/jovanbulck/sgx-step/pull/59), but I will check it later.  
+> **Note**: For unknown reasons, the sgx-step's APIC timer attacks could freeze the kernel in GUI mode. 
+> To avoid this problem, press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>F2</kbd> to enter plain text mode. 
+> 
+> I had checked *IRQ work interrupts* by `cat /proc/interrupts` and only the victim core seems to have a crazy number of IRQs. 
+> The victim core's IRQs does not change when in normal execution. 
+> I think the implementation which issues APIC time interrupts should be alright. 
+> I may find out the reasons later if I have time. 
 
 --- 
 
