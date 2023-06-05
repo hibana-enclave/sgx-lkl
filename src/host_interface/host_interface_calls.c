@@ -24,8 +24,7 @@
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
 extern unsigned int sgx_lkl_aex_cnt; 
 extern int __sgx_step_app_terminated; 
-
-extern void sgx_step_attack_signal_timer_handler(int signum); 
+extern APIC_Triggered_State __sgx_step_apic_triggered; 
 
 /* Function to register the enclaves signal handler */
 extern void register_enclave_signal_handler(void* signal_handler);
@@ -117,9 +116,9 @@ void sgxlkl_host_app_main_end(void)
 {
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
     __sgx_step_app_terminated = 1;
-    printf("[[ ENC ]] ************** Application End   **************\n");
     printf("[[ SGX-STEP ]] Turning off the sgx-step apic attacker...\n"); 
     apic_timer_deadline();  // haohua, turn off sgx-step APIC local timer only if the ethread has exited (after pthread_cond_wait)
+    printf("[[ ENC ]] ************** Application End   **************\n");
 } 
 
 void sgxlkl_host_app_main_start(void)
@@ -132,33 +131,12 @@ void sgxlkl_host_app_main_start(void)
 
 void sgxlkl_host_sgx_step_attack_setup(void)
 {
-    // 
-    int attack_timer_range = 200;
-    int base_timer = 100;
-    srand(time(NULL));
-    unsigned int attack_timer_delay = base_timer + rand() % attack_timer_range;
-    info("[[ SGX-STEP ]] The host will trigger the SGX-STEP APIC attack in %.6lf second \n", attack_timer_delay / 1000.0); 
-    /* Install timer_handler as the signal handler for SIGVTALRM */
-    struct sigaction sa; 
-    struct itimerval timer; 
-    memset(&sa, 0, sizeof(sa));
-    sigemptyset(&sa.sa_mask); 
-    sa.sa_flags = 0; 
-    sa.sa_handler = sgx_step_attack_signal_timer_handler; 
-    sigaction(SIGALRM, &sa, NULL);   
-    /* configure the timer to expire after attack_timer_delay mircosec... */
-    timer.it_value.tv_sec = 0;
-    timer.it_value.tv_usec = attack_timer_delay; 
-    timer.it_interval.tv_sec = 0; 
-    timer.it_interval.tv_usec = 0; 
-    setitimer(ITIMER_REAL, &timer, NULL);  
-
-    // 
     info("Establishing user-space APIC/IDT mappings..."); 
     idt_t idt = {0};
     map_idt(&idt);
     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
     apic_timer_oneshot(IRQ_VECTOR);
+    __sgx_step_apic_triggered = STEP_PHASE_1; 
 }
 
 void sgxlkl_host_hw_cpuid(
