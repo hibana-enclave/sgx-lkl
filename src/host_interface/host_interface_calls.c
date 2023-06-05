@@ -143,7 +143,8 @@ void sgxlkl_host_sgx_step_attack_setup(void)
     struct itimerval timer; 
     memset(&sa, 0, sizeof(sa));
     sigemptyset(&sa.sa_mask); 
-    sa.sa_handler = &sgx_step_attack_signal_timer_handler; 
+    sa.sa_flags = 0; 
+    sa.sa_handler = sgx_step_attack_signal_timer_handler; 
     sigaction(SIGALRM, &sa, NULL);   
     /* configure the timer to expire after attack_timer_delay mircosec... */
     timer.it_value.tv_sec = 0;

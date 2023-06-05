@@ -159,7 +159,7 @@ void sgx_step_attack_signal_timer_handler(int signum){
 }
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const int SGX_STEP_INTERVAL = 90; 
+const int SGX_STEP_INTERVAL = 65; 
 unsigned long long __aex_count = 0; 
 
 
