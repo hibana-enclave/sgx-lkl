@@ -5,11 +5,11 @@
 
 > **Note**: For unknown reasons, the sgx-step's APIC timer attacks could freeze the kernel in GUI mode. 
 > To avoid this problem, press <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>F2</kbd> to enter plain text mode. 
-> 
-> I had checked *IRQ work interrupts* by `cat /proc/interrupts` and only the victim core seems to have a crazy number of IRQs. 
-> The victim core's IRQs does not change when in normal execution. 
-> I think the implementation which issues APIC time interrupts should be alright. 
-> I may find out the reasons later if I have time. 
+
+I had checked *IRQ work interrupts* by `cat /proc/interrupts` and only the victim core seems to have a crazy number of IRQs. 
+The victim core's IRQs does not change when in normal execution. 
+I think the implementation which issues APIC time interrupts should be alright. 
+I may find out the reasons later if I have time. 
 
 --- 
 
