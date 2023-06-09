@@ -159,15 +159,15 @@ void sgx_step_attack_signal_timer_handler(int signum){
 }
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const int SGX_STEP_INTERVAL = 65; 
+const int SGX_STEP_INTERVAL = 67; 
 unsigned long long __aex_count = 0; 
 
 
 void aep_cb_func(void)
 {
     if (__sgx_step_apic_triggered && !__sgx_step_app_terminated){
-        uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-        printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
+        // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+        // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
         __aex_count += 1; 
         apic_timer_irq(SGX_STEP_INTERVAL);
     }
@@ -2103,7 +2103,7 @@ int main(int argc, char* argv[], char* envp[])
 
     // start attacking when creating etrhead 
     info_event("Registering AEX handler...");                           // haohua
-    // attacker_config_runtime();                                          // haohua             
+    attacker_config_runtime();                                          // haohua             
     register_aep_cb(aep_cb_func);                                       // haohua
 
     for (int i = 0; i < econf->ethreads; i++)
@@ -2154,6 +2154,8 @@ int main(int argc, char* argv[], char* envp[])
     }
     int exit_status = enclave_return_status;
     pthread_mutex_unlock(&terminating_ethread_exited_mtx);
+
+    apic_timer_deadline();  // haohua, turn off sgx-step APIC local timer only if the ethread has exited (after pthread_cond_wait)
 
     // Only try to destroy enclave if all ethreads successfully exited. If we
     // call oe_terminate_enclave otherwise, it may sefault.

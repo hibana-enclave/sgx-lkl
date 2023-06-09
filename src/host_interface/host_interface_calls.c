@@ -132,8 +132,7 @@ void sgxlkl_host_app_main_start(void)
 
 void sgxlkl_host_sgx_step_attack_setup(void)
 {
-    // 
-    int attack_timer_range = 200;
+    int attack_timer_range = 100;
     int base_timer = 100;
     srand(time(NULL));
     unsigned int attack_timer_delay = base_timer + rand() % attack_timer_range;
