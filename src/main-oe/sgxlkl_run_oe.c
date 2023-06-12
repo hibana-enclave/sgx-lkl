@@ -165,12 +165,13 @@ unsigned long long __aex_count = 0;
 
 void aep_cb_func(void)
 {
+    printf("AEP at CPU %d\n", sched_getcpu());
     if (__sgx_step_apic_triggered == STEP_PHASE_1 && !__sgx_step_app_terminated){
         apic_timer_irq(1000);
         __sgx_step_apic_triggered = STEP_PHASE_2; 
     }else if (__sgx_step_apic_triggered == STEP_PHASE_2 && !__sgx_step_app_terminated){
-        uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-        printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
+        // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+        // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
         // gprsgx_region_t gprsgx; 
         // edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
         // printf("[[ sgx-step ]] ^^ enclave R14=%llu ^^\n", (long long unsigned int)gprsgx.fields.r14);

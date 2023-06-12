@@ -22,6 +22,8 @@
 #include "libsgxstep/sched.h"
 #include "libsgxstep/idt.h"
 
+int sched_getcpu(void); 
+
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
 extern unsigned int sgx_lkl_aex_cnt; 
 extern int __sgx_step_app_terminated; 
@@ -120,7 +122,8 @@ void sgxlkl_host_app_main_end(void)
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
     __sgx_step_app_terminated = 1;
     printf("[[ ENC ]] ************** Application End   **************\n");
-    printf("[[ SGX-STEP ]] Turning off the sgx-step apic attacker...\n"); 
+    __sgx_step_apic_triggered = STEP_PHASE_0; 
+    info("[[ SGX-STEP ]] Turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu()); 
     apic_timer_deadline();  // haohua, turn off sgx-step APIC local timer only if the ethread has exited (after pthread_cond_wait)
 } 
 
@@ -137,7 +140,7 @@ void sgxlkl_host_sgx_step_attack_setup(void)
     if (__sgx_step_apic_triggered != STEP_PHASE_0){
         sgxlkl_host_fail("Don't issue ud2 more thane once...."); 
     }
-    info("Establishing user-space APIC/IDT mappings..."); 
+    info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
     idt_t idt = {0};
     map_idt(&idt);
     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
