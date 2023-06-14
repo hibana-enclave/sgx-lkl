@@ -153,21 +153,22 @@ void attacker_config_runtime(void)
 APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 
-void sgx_step_attack_signal_timer_handler(int signum){
-    info_event(" STRONGBOX is attacking now !!!");
-    __sgx_step_apic_triggered = 1;
-}
-
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const int SGX_STEP_INTERVAL = 67; 
+const int SGX_STEP_INTERVAL = 160; 
 unsigned long long __aex_count = 0; 
 
+#define ATTACK_TIME_RANGE 2000
+#define ATTACK_BASE_TIME 500
 
 void aep_cb_func(void)
 {
-    printf("AEP at CPU %d\n", sched_getcpu());
     if (__sgx_step_apic_triggered == STEP_PHASE_1 && !__sgx_step_app_terminated){
-        apic_timer_irq(1000);
+        info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
+        idt_t idt = {0};
+        map_idt(&idt);
+        install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+        apic_timer_oneshot(IRQ_VECTOR);
+        apic_timer_irq(ATTACK_BASE_TIME + rand() % ATTACK_TIME_RANGE); // apic_write(APIC_TMICT, xxx); give a large number to APIC's initial count. 
         __sgx_step_apic_triggered = STEP_PHASE_2; 
     }else if (__sgx_step_apic_triggered == STEP_PHASE_2 && !__sgx_step_app_terminated){
         // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
@@ -177,6 +178,10 @@ void aep_cb_func(void)
         // printf("[[ sgx-step ]] ^^ enclave R14=%llu ^^\n", (long long unsigned int)gprsgx.fields.r14);
         __aex_count += 1; 
         apic_timer_irq(SGX_STEP_INTERVAL);
+    }else if (__sgx_step_apic_triggered == STEP_PHASE_3){
+        info("[[ SGX-STEP ]] Turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu()); 
+        apic_timer_deadline();  // haohua, turn off sgx-step APIC local timer only if the ethread has exited (after pthread_cond_wait)
+        __sgx_step_apic_triggered = STEP_PHASE_0; 
     }
 }
 
