@@ -53,6 +53,7 @@
 #include "openenclave/bits/sgx/sgxtypes.h"
 #include "openenclave/internal/sgx/td.h"
 #define SSA_PAGE_SIZE 4096
+#define SSA_XSAVE_OFFSET 0          // xsave is at the start of SSA area 
 #define SSA_XSAVE_XMM0_OFFSET 160
 #define SSA_XSAVE_XMM0_SIZE 16      // XMM0 register size is 16 bytes (128 bites)    
 #define SSA_XSAVE_YMM0_OFFSET 576   // 512 + 64 = 576 
@@ -228,8 +229,8 @@ int lthread_run(void)
 
     //    Nelly
     /* initialize all extended registers */
-      __asm__ __volatile__("pcmpeqw  %%xmm0, %%xmm0 \n"
-                        "pxor  %%xmm0, %%xmm0 \n"
+      __asm__ __volatile__(
+                        "VPCMPEQB   %%xmm0, %%xmm0, %%xmm0\n"
                         "movdqa %%xmm0, %%xmm1 \n"
                         "movdqa %%xmm0, %%xmm2 \n"
                         "movdqa %%xmm0, %%xmm3 \n"
@@ -244,7 +245,8 @@ int lthread_run(void)
                         //"movdqa %%xmm0, %%xmm12 \n"
                         //"movdqa %%xmm0, %%xmm13 \n"
                         //"movdqa %%xmm0, %%xmm14 \n"
-                        "movdqa %%xmm0, %%xmm15" : : :);
+                        //"movdqa %%xmm0, %%xmm15" 
+        : : :);
 
     /* use the YMM0 context state in SSA */ 
     sgxlkl_info("Start lthread modification Nelly\n");
@@ -254,9 +256,9 @@ int lthread_run(void)
     sgxlkl_info("DEBUG tcs address: %p\n", tcs);
 
     sgxlkl_info("assigning SSA's XSAVE address to strongbox stack....\n");
-    uint64_t xsave_ymm0_address = (uint64_t)tcs + SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET;
-    sgxlkl_info("DEBUG ssa ymm state address: %p\n", xsave_ymm0_address);
-    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_ymm0_address));
+    uint64_t xsave_xmm0_address = (uint64_t)tcs + SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET;
+    sgxlkl_info("DEBUG ssa xmm state address: %p\n", xsave_xmm0_address);
+    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_xmm0_address));
 
     // sgxlkl_info("assigning SSA's GRR address to strongbox stack....\n");
     // sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184 + 1);
