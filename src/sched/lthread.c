@@ -256,7 +256,7 @@ int lthread_run(void)
     sgxlkl_info("DEBUG tcs address: %p\n", tcs);
 
     sgxlkl_info("assigning SSA's XSAVE address to strongbox stack....\n");
-    uint64_t xsave_xmm0_address = (uint64_t)tcs + SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET;
+    uint64_t xsave_xmm0_address = (uint64_t)tcs + 1 * SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET;
     sgxlkl_info("DEBUG ssa xmm state address: %p\n", xsave_xmm0_address);
     __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_xmm0_address));
 
