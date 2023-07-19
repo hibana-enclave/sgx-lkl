@@ -261,7 +261,7 @@ int lthread_run(void)
     __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_xmm0_address));
 
     // sgxlkl_info("assigning SSA's GRR address to strongbox stack....\n");
-    // sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184 + 1);
+    // sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184 + 1); // add 1 to mismatch a slot for a whole pointer. 
     // sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
     // __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));
 
