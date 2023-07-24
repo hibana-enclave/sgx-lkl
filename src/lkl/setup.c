@@ -1164,7 +1164,6 @@ static _Atomic(bool) _is_lkl_terminating = false;
 void lkl_terminate(int exit_status)
 {
 
-    /* sgx-step */
     {
         struct timespec endtime, runtime;
         clock_gettime(CLOCK_MONOTONIC, &endtime);
@@ -1173,9 +1172,7 @@ void lkl_terminate(int exit_status)
             "Application runtime: %lld.%.9lds\n",
             runtime.tv_sec,
             runtime.tv_nsec);
-        sgxlkl_host_app_main_end(); 
     }
-    /* sgx-step */
 
     int ret;
     long res;

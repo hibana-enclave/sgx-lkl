@@ -28,6 +28,8 @@ extern unsigned int __sgx_lkl_aex_cnt_aux;
 extern unsigned int sgx_lkl_aex_cnt; 
 extern int __sgx_step_app_terminated; 
 extern APIC_Triggered_State __sgx_step_apic_triggered; 
+extern unsigned long long __aex_count; 
+
 
 extern void sgx_step_attack_signal_timer_handler(int signum); 
 
@@ -119,10 +121,13 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 
 void sgxlkl_host_app_main_end(void)
 {
+    apic_timer_deadline();
+    printf("[[ SGX-STEP ]] turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu());
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
     __sgx_step_app_terminated = 1;
     printf("[[ ENC ]] ************** Application End   **************\n");
-    __sgx_step_apic_triggered = STEP_PHASE_3; 
+    printf("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu \n", __aex_count);
+    __sgx_step_apic_triggered = STEP_PHASE_3;  
 } 
 
 void sgxlkl_host_app_main_start(void)
@@ -135,6 +140,7 @@ void sgxlkl_host_app_main_start(void)
 
 void sgxlkl_host_sgx_step_attack_setup(void)
 {
+    __aex_count = 0; 
     if (__sgx_step_apic_triggered != STEP_PHASE_0){
         sgxlkl_host_fail("Don't issue ud2 more thane once...."); 
     }

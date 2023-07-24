@@ -162,7 +162,7 @@ unsigned long long __aex_count = 0;
 
 void aep_cb_func(void)
 {
-    if (__sgx_step_apic_triggered == STEP_PHASE_1 && !__sgx_step_app_terminated){
+    if (__sgx_step_apic_triggered == STEP_PHASE_1 && (!__sgx_step_app_terminated)){
         __sgx_step_apic_triggered = STEP_PHASE_2; 
         info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
         idt_t idt = {0};
@@ -173,7 +173,7 @@ void aep_cb_func(void)
         info("[[ SGX-STEP ]] attacks will start after %u cpu cycles...", delay_time); 
         apic_timer_oneshot(IRQ_VECTOR);
         apic_timer_irq(delay_time); // apic_write(APIC_TMICT, xxx); give a large number to APIC's initial count. 
-    }else if (__sgx_step_apic_triggered == STEP_PHASE_2 && !__sgx_step_app_terminated){
+    }else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (!__sgx_step_app_terminated)){
         // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
         // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
         // gprsgx_region_t gprsgx; 
@@ -181,10 +181,6 @@ void aep_cb_func(void)
         // printf("[[ sgx-step ]] ^^ enclave R14=%llu ^^\n", (long long unsigned int)gprsgx.fields.r14);
         __aex_count += 1; 
         apic_timer_irq(SGX_STEP_INTERVAL);
-    }else if (__sgx_step_apic_triggered == STEP_PHASE_3){
-        info("[[ SGX-STEP ]] Turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu()); 
-        apic_timer_deadline(); 
-        __sgx_step_apic_triggered = STEP_PHASE_0; 
     }
 }
 
@@ -2194,7 +2190,6 @@ int main(int argc, char* argv[], char* envp[])
         exit_status);
 
     info("[[ SGX-STEP ]] all is well; irq_count=%d; exiting..", __ss_irq_count);
-    info("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu (apic freq = %d)", __aex_count, SGX_STEP_INTERVAL); 
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
 

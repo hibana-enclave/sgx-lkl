@@ -30,7 +30,6 @@ typedef struct sgxlkl_userargs
         int zero_pages);
     void (*ua_sgxlkl_app_main_start_notify)(void); 
     void (*ua_sgxlkl_app_main_end_notify)(void);
-    void (*ua_sgxlkl_app_sgx_step_attack_notify)(void); 
 
     /* Arguments */
     int argc;

@@ -30,10 +30,6 @@ void sgxlkl_app_main_start_notify()
     sgxlkl_host_app_main_start(); 
 }
 
-void sgxlkl_app_sgx_step_attack_notify()
-{ 
-    // sgxlkl_host_sgx_step_attack_setup(); 
-}
 
 
 bool sgxlkl_in_sw_debug_mode()

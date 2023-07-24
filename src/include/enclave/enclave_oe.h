@@ -20,6 +20,5 @@ bool sgxlkl_in_hw_release_mode();
 
 void sgxlkl_app_main_end_notify(); 
 void sgxlkl_app_main_start_notify(); 
-void sgxlkl_app_sgx_step_attack_notify(); 
 
 #endif /* ENCLAVE_OE_H */
