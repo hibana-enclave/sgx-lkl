@@ -160,7 +160,7 @@ const int SGX_STEP_INTERVAL = 65;
 unsigned long long __aex_count = 0; 
 
 #define ATTACK_TIME_RANGE 3000
-#define ATTACK_BASE_TIME 500
+#define ATTACK_BASE_TIME 100000000
 
 void aep_cb_func(void)
 {
@@ -173,22 +173,20 @@ void aep_cb_func(void)
         srand(time(NULL)); 
         uint32_t delay_time = ATTACK_BASE_TIME + rand() % ATTACK_TIME_RANGE; 
         info("[[ SGX-STEP ]] attacks will start after %u cpu cycles...", delay_time); 
-        apic_timer_oneshot(IRQ_VECTOR);
-        apic_timer_irq(delay_time); // apic_write(APIC_TMICT, xxx); give a large number to APIC's initial count. 
+        apic_timer_irq(delay_time);
+	    apic_timer_oneshot(IRQ_VECTOR);
     }
-    // else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
-    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    //     // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
-    //     // gprsgx_region_t gprsgx; 
-    //     // edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-    //     // printf("[[ sgx-step ]] ^^ enclave R14=%llu ^^\n", (long long unsigned int)gprsgx.fields.r14);
-    //     __aex_count += 1; 
-    //     apic_timer_irq(SGX_STEP_INTERVAL);
-    // }
+    else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+        __aex_count += 1; 
+        apic_timer_irq(SGX_STEP_INTERVAL);
+    }
 
 #ifdef SGX_STEP_DEBUG
     else if (__sgx_step_apic_triggered == STEP_PHASE_2){
         printf("===> [[ DEBUG ]] irq_cnt = %d\n", __ss_irq_count); 
+        if (__ss_irq_count > 0){
+            printf("====> [[ DEBUG ]] setting apic_timer_irq ...\n");
+        }
     }
 #endif
 
