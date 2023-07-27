@@ -188,7 +188,7 @@ void aep_cb_func(void)
 
 #ifdef SGX_STEP_DEBUG
     else if (__sgx_step_apic_triggered == STEP_PHASE_2){
-        printf("irq_cnt = %d\n", __ss_irq_count); 
+        printf("===> [[ DEBUG ]] irq_cnt = %d\n", __ss_irq_count); 
     }
 #endif
 
