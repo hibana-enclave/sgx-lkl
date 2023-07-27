@@ -161,7 +161,7 @@ unsigned long long __aex_count = 0;
 
 
 const uint64_t attack_timer_range = 500; 
-const uint64_t attack_timer_base_time = 100000; 
+const uint64_t attack_timer_base_time = 300; 
 
 void aep_cb_func(void)
 {
@@ -173,7 +173,7 @@ void aep_cb_func(void)
         install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
         srand(time(NULL)); 
         const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
-        info("[[ SGX-STEP ]] attacks will start after %u cpu cycles...", delay_time); 
+        info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
 	    apic_timer_oneshot(IRQ_VECTOR);
 	    apic_timer_irq(delay_time); 
     }
