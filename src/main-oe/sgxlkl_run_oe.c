@@ -79,6 +79,8 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
+#define SGX_STEP_DEBUG 1
+
 extern char __sgxlklrun_text_segment_start;
 
 /* Function to initialize the host interface */
@@ -173,15 +175,23 @@ void aep_cb_func(void)
         info("[[ SGX-STEP ]] attacks will start after %u cpu cycles...", delay_time); 
         apic_timer_oneshot(IRQ_VECTOR);
         apic_timer_irq(delay_time); // apic_write(APIC_TMICT, xxx); give a large number to APIC's initial count. 
-    }else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
-        // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-        // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
-        // gprsgx_region_t gprsgx; 
-        // edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-        // printf("[[ sgx-step ]] ^^ enclave R14=%llu ^^\n", (long long unsigned int)gprsgx.fields.r14);
-        __aex_count += 1; 
-        apic_timer_irq(SGX_STEP_INTERVAL);
     }
+    // else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    //     // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
+    //     // gprsgx_region_t gprsgx; 
+    //     // edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
+    //     // printf("[[ sgx-step ]] ^^ enclave R14=%llu ^^\n", (long long unsigned int)gprsgx.fields.r14);
+    //     __aex_count += 1; 
+    //     apic_timer_irq(SGX_STEP_INTERVAL);
+    // }
+
+#ifdef SGX_STEP_DEBUG
+    else if (__sgx_step_apic_triggered == STEP_PHASE_2){
+        printf("irq_cnt = %d\n", __ss_irq_count); 
+    }
+#endif
+
 }
 
 // 0x 1111 1111 1111 1111 1111 1111 1111 1111 
