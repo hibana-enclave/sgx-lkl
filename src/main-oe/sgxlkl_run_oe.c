@@ -173,8 +173,8 @@ void aep_cb_func(void)
         srand(time(NULL)); 
         uint32_t delay_time = ATTACK_BASE_TIME + rand() % ATTACK_TIME_RANGE; 
         info("[[ SGX-STEP ]] attacks will start after %u cpu cycles...", delay_time); 
-        apic_timer_irq(delay_time); // apic_write(APIC_TMICT, xxx); give a large number to APIC's initial count. 
         apic_timer_oneshot(IRQ_VECTOR);
+        apic_timer_irq(delay_time); // apic_write(APIC_TMICT, xxx); give a large number to APIC's initial count. 
     }
     else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
         // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
