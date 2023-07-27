@@ -178,6 +178,8 @@ void aep_cb_func(void)
 	    apic_timer_irq(delay_time); 
     }
     else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+        uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+        printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
         __aex_count += 1; 
         apic_timer_irq(SGX_STEP_INTERVAL);
     }
