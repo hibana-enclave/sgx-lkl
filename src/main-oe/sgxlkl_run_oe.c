@@ -156,11 +156,11 @@ APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const int SGX_STEP_INTERVAL = 65; 
+const int SGX_STEP_INTERVAL = 61; 
 unsigned long long __aex_count = 0; 
 
-#define ATTACK_TIME_RANGE 3000
-#define ATTACK_BASE_TIME 100000000
+#define ATTACK_TIME_RANGE 500 
+#define ATTACK_BASE_TIME 100000
 
 void aep_cb_func(void)
 {
@@ -173,20 +173,17 @@ void aep_cb_func(void)
         srand(time(NULL)); 
         uint32_t delay_time = ATTACK_BASE_TIME + rand() % ATTACK_TIME_RANGE; 
         info("[[ SGX-STEP ]] attacks will start after %u cpu cycles...", delay_time); 
-        apic_timer_irq(delay_time);
-	    apic_timer_oneshot(IRQ_VECTOR);
+	apic_timer_oneshot(IRQ_VECTOR);
+	apic_timer_irq((unsigned long long)1000000000); 
     }
-    else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
-        __aex_count += 1; 
-        apic_timer_irq(SGX_STEP_INTERVAL);
-    }
+    //else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+    //    __aex_count += 1; 
+    //    apic_timer_irq(SGX_STEP_INTERVAL);
+    //}
 
 #ifdef SGX_STEP_DEBUG
     else if (__sgx_step_apic_triggered == STEP_PHASE_2){
         printf("===> [[ DEBUG ]] irq_cnt = %d\n", __ss_irq_count); 
-        if (__ss_irq_count > 0){
-            printf("====> [[ DEBUG ]] setting apic_timer_irq ...\n");
-        }
     }
 #endif
 
