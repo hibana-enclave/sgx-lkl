@@ -136,7 +136,7 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 /* Configure and check attacker untrusted runtime environment. */
 void attacker_config_runtime(void)
 {
-    // ASSERT( !claim_cpu(VICTIM_CPU) );
+    // ASSERT( !claim_cpu(0) );
     ASSERT( !prepare_system_for_benchmark(PSTATE_PCT) );
     print_system_settings();
 
@@ -156,11 +156,11 @@ APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const int SGX_STEP_INTERVAL = 45; 
+const int SGX_STEP_INTERVAL = 47; 
 unsigned long long __aex_count = 0; 
 
 
-const uint64_t attack_timer_range = 500; 
+const uint64_t attack_timer_range = 1; 
 const uint64_t attack_timer_base_time = 100000000; 
 
 void aep_cb_func(void)
@@ -175,21 +175,29 @@ void aep_cb_func(void)
         const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
         info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
 	    apic_timer_oneshot(IRQ_VECTOR);
-	    apic_timer_irq(delay_time); 
+	    apic_timer_irq((unsigned long long)delay_time); 
     }
-    // else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
-    //     uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    //     printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);
-    //     __aex_count += 1; 
-    //     apic_timer_irq(SGX_STEP_INTERVAL);
-    // }
+    else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+        // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+        // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
+        // __aex_count += 1; 
+        // apic_timer_irq(SGX_STEP_INTERVAL);
+    }
 
-#ifdef SGX_STEP_DEBUG
-    else if (__sgx_step_apic_triggered == STEP_PHASE_2){
-        apic_timer_count_print(); 
-        printf("===> [[ DEBUG ]] irq_cnt = %d\n", __ss_irq_count); 
+
+
+    uint64_t cval; 
+    gprsgx_region_t gprsgx; 
+    edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
+    cval = gprsgx.fields.r14;  
+    if (cval == 0xFEFEFEFE && __sgx_step_apic_triggered == STEP_PHASE_2){
+        uint64_t tmict, tmcct; 
+        apic_read_timer_count(&tmict, &tmcct); 
+        printf(" ====> [[ DEBUG ]] cval = %lx, irq_cnt = %d | apic_tmict = %lx, apic_tmcct = %lx \n", cval, __ss_irq_count, tmict, tmcct); 
+    }else{  
+        // printf(" ====> [[ DEBUG ]] cval = %lx\n", cval);
     }
-#endif
+
 
 }
 
@@ -2198,7 +2206,7 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
-    info("[[ SGX-STEP ]] all is well; irq_count=%d; exiting..", __ss_irq_count);
+    info("[[ SGX-STEP ]] all is well; irq_count=%d; exiting.. (freq=%d)", __ss_irq_count, SGX_STEP_INTERVAL);
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
 
