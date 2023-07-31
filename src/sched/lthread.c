@@ -59,7 +59,7 @@
 #define SSA_XSAVE_YMM0_OFFSET       576   // 512 + 64 = 576 
 #define SSA_XSAVE_YMM0_SIZE         16      /// YMM0[255:128] register size is 16 bytse(128 bites), overall YMM0 is 32 bytes (256 bits)
 #define SGX_GPRSGX_SIZE             184
-#define SGX_GPRSGX_RESERVED_OFFSET  160
+#define SGX_GPRSGX_RESERVED_OFFSET  164
 
 extern int vio_enclave_wakeup_event_channel(void);
 

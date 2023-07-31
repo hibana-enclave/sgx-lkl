@@ -165,24 +165,34 @@ const uint64_t attack_timer_base_time = 2300; // tested empirically.
 
 void aep_cb_func(void)
 {
-    if (__sgx_step_apic_triggered == STEP_PHASE_1 && (!__sgx_step_app_terminated)){
-        __sgx_step_apic_triggered = STEP_PHASE_2; 
-        info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
-        idt_t idt = {0};
-        map_idt(&idt);
-        install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-        srand(time(NULL)); 
-        const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
-        info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
-	    apic_timer_oneshot(IRQ_VECTOR);
-	    apic_timer_irq((unsigned long long)delay_time); 
+    // if (__sgx_step_apic_triggered == STEP_PHASE_1 && (!__sgx_step_app_terminated)){
+    //     __sgx_step_apic_triggered = STEP_PHASE_2; 
+    //     info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
+    //     idt_t idt = {0};
+    //     map_idt(&idt);
+    //     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    //     srand(time(NULL)); 
+    //     const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
+    //     info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
+	//     apic_timer_oneshot(IRQ_VECTOR);
+	//     apic_timer_irq((unsigned long long)delay_time); 
+    // }
+    // else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+    //     // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
+    //     __aex_count += 1; 
+    //     apic_timer_irq(SGX_STEP_INTERVAL);
+    // }
+
+    static int started = 0; 
+    gprsgx_region_t gprsgx; 
+    edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
+    if (!started){
+        if (gprsgx.fields.r14 == 0xAB88) started = 1; 
+    }else{  
+        printf("[[ sgx-step ]] ^^ SSA reserved =%#x ^^\n", gprsgx.fields.reserved);    
     }
-    else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
-        // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-        // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
-        __aex_count += 1; 
-        apic_timer_irq(SGX_STEP_INTERVAL);
-    }
+
 }
 
 // 0x 1111 1111 1111 1111 1111 1111 1111 1111 
