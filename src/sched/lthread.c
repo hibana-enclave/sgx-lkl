@@ -255,6 +255,7 @@ int lthread_run(void)
     sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * SSA_PAGE_SIZE));
     sgxlkl_info("DEBUG tcs address: %p\n", tcs);
 
+    // Enclave Layout: https://github.com/openenclave/openenclave/blob/master/host/README.md
     sgxlkl_info("assigning SSA's XSAVE address to strongbox stack....\n");
     uint64_t xsave_xmm0_address = (uint64_t)tcs + 1 * SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET;
     sgxlkl_info("DEBUG ssa xmm state address: %p\n", xsave_xmm0_address);
