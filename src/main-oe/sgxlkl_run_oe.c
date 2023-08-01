@@ -79,7 +79,7 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-#define SGX_STEP_DEBUG 1
+#define SGX_STEP_DEBUG 0
 
 extern char __sgxlklrun_text_segment_start;
 
@@ -165,25 +165,33 @@ const uint64_t attack_timer_base_time = 2300; // tested empirically.
 
 void aep_cb_func(void)
 {
-    // if (__sgx_step_apic_triggered == STEP_PHASE_1 && (!__sgx_step_app_terminated)){
-    //     __sgx_step_apic_triggered = STEP_PHASE_2; 
-    //     info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
-    //     idt_t idt = {0};
-    //     map_idt(&idt);
-    //     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-    //     srand(time(NULL)); 
-    //     const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
-    //     info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
-	//     apic_timer_oneshot(IRQ_VECTOR);
-	//     apic_timer_irq((unsigned long long)delay_time); 
-    // }
-    // else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
-    //     // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-    //     // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
-    //     __aex_count += 1; 
-    //     apic_timer_irq(SGX_STEP_INTERVAL);
-    // }
+    if (__sgx_step_apic_triggered == STEP_PHASE_1 && (!__sgx_step_app_terminated)){
+        __sgx_step_apic_triggered = STEP_PHASE_2; 
+        info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
+        idt_t idt = {0};
+        map_idt(&idt);
+        install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+        srand(time(NULL)); 
+        const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
+        info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
+	    apic_timer_oneshot(IRQ_VECTOR);
+	    apic_timer_irq((unsigned long long)delay_time); 
+    }
+    else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+        gprsgx_region_t gprsgx; 
+        edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
+        if (gprsgx.fields.reserved == 0xDE77){
+            // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+            // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
+            __aex_count += 1; 
+            apic_timer_irq(SGX_STEP_INTERVAL);
+        }else if (gprsgx.fields.reserved != 0xDE77 && __ss_irq_count == 1){
+            // for example, `movq %%gs:32, %%rax\n` and `movq $0xDE77, (%%rax)` two instructions should be placed at the beginning of a targeted function. 
+            sgxlkl_host_fail(" **** [[ SGX-STEP-ERROR ]] The value in SSA's resreved area is not 0xDE77. To fix this error, write 0xDE77 to ssa.reserved (which is in %%gs:32) and increase `attack_timer_base_time`  **** ");
+        }
+    }
 
+#ifdef SGX_STEP_DEBUG
     static int started = 0; 
     gprsgx_region_t gprsgx; 
     edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
@@ -192,9 +200,8 @@ void aep_cb_func(void)
     }else{  
         printf("[[ sgx-step ]] ^^ SSA reserved =%#x ^^\n", gprsgx.fields.reserved);    
     }
-
+#endif
 }
-
 // 0x 1111 1111 1111 1111 1111 1111 1111 1111 
 
 
@@ -2200,7 +2207,7 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
-    info("[[ SGX-STEP ]] all is well; irq_count=%d; exiting.. (freq=%d)", __ss_irq_count, SGX_STEP_INTERVAL);
+    info("[[ SGX-STEP-RESULT ]] all is well; irq_count=%d; exiting.. (freq=%d)", __ss_irq_count, SGX_STEP_INTERVAL);
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
 
