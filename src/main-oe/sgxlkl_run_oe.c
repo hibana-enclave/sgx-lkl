@@ -161,7 +161,7 @@ unsigned long long __aex_count = 0;
 
 
 const uint64_t attack_timer_range = 1; 
-const uint64_t attack_timer_base_time = 2300; // tested empirically. 
+const uint64_t attack_timer_base_time = 1600; // tested empirically. 
 
 void aep_cb_func(void)
 {
