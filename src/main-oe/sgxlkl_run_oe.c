@@ -161,7 +161,7 @@ unsigned long long __aex_count = 0;
 
 
 const uint64_t attack_timer_range = 1; 
-const uint64_t attack_timer_base_time = 1600; // tested empirically. 
+const uint64_t attack_timer_base_time = 200; // tested empirically. 
 
 void aep_cb_func(void)
 {
@@ -181,28 +181,16 @@ void aep_cb_func(void)
         gprsgx_region_t gprsgx; 
         edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
         if (gprsgx.fields.reserved == 0xDE77){
-            // uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-            // printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
-            __aex_count += 1; 
-            apic_timer_irq(SGX_STEP_INTERVAL);
+        	// uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
+         	// printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
+        	__aex_count += 1; 
+        	apic_timer_irq(SGX_STEP_INTERVAL);
         }else if (gprsgx.fields.reserved != 0xDE77 && __ss_irq_count == 1){
-            // for example, `movq %%gs:32, %%rax\n` and `movq $0xDE77, (%%rax)` two instructions should be placed at the beginning of a targeted function. 
-            sgxlkl_host_fail(" **** [[ SGX-STEP-ERROR ]] The value in SSA's resreved area is not 0xDE77. To fix this error, write 0xDE77 to ssa.reserved (which is in %%gs:32) and increase `attack_timer_base_time`  **** ");
+        	/* for example, `movq %%gs:32, %%rax\n` and `movq $0xDE77, (%%rax)` two instructions should be placed at the beginning of a targeted function */ 
+		    sgxlkl_host_fail(" **** [[ SGX-STEP-ERROR ]] The value in SSA's resreved area is not 0xDE77. To fix this error, write 0xDE77 to ssa.reserved (which is in %%gs:32) and increase `attack_timer_base_time`  **** ");
         }
     }
-
-#ifdef SGX_STEP_DEBUG
-    static int started = 0; 
-    gprsgx_region_t gprsgx; 
-    edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-    if (!started){
-        if (gprsgx.fields.r14 == 0xAB88) started = 1; 
-    }else{  
-        printf("[[ sgx-step ]] ^^ SSA reserved =%#x ^^\n", gprsgx.fields.reserved);    
-    }
-#endif
 }
-// 0x 1111 1111 1111 1111 1111 1111 1111 1111 
 
 
 static void version()
