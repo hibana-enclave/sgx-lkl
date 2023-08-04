@@ -23,11 +23,6 @@
 #include "libsgxstep/sched.h"
 #include "libsgxstep/idt.h"
 
-
-const static uint64_t attack_timer_range = 1; 
-const static uint64_t attack_timer_base_time = 500; // tested empirically. 
-
-
 int sched_getcpu(void); 
 
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
@@ -156,7 +151,9 @@ void sgxlkl_host_sgx_step_attack_setup(void)
     map_idt(&idt);
     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
     srand(time(NULL)); 
-    const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
+#define ATTACK_TIMER_BASE_TIME 500
+#define ATTACK_TIMER_RANGE 1
+    const uint64_t delay_time = ATTACK_TIMER_BASE_TIME + rand() % ATTACK_TIMER_RANGE; 
     info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
     apic_timer_oneshot(IRQ_VECTOR);
     apic_timer_irq((unsigned long long)delay_time); 
