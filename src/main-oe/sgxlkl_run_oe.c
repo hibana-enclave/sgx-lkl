@@ -159,25 +159,9 @@ int __sgx_step_app_terminated = 0; // if the app stops (either normal terminatio
 const int SGX_STEP_INTERVAL = 47; 
 unsigned long long __aex_count = 0; 
 
-
-const uint64_t attack_timer_range = 1; 
-const uint64_t attack_timer_base_time = 200; // tested empirically. 
-
 void aep_cb_func(void)
 {
-    if (__sgx_step_apic_triggered == STEP_PHASE_1 && (!__sgx_step_app_terminated)){
-        __sgx_step_apic_triggered = STEP_PHASE_2; 
-        info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
-        idt_t idt = {0};
-        map_idt(&idt);
-        install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
-        srand(time(NULL)); 
-        const uint64_t delay_time = attack_timer_base_time + rand() % attack_timer_range; 
-        info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
-	    apic_timer_oneshot(IRQ_VECTOR);
-	    apic_timer_irq((unsigned long long)delay_time); 
-    }
-    else if (__sgx_step_apic_triggered == STEP_PHASE_2 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
+    if (__sgx_step_apic_triggered == STEP_PHASE_1 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
         gprsgx_region_t gprsgx; 
         edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
         if (gprsgx.fields.reserved == 0xDE77){

@@ -6,9 +6,8 @@
 
 typedef enum {
     STEP_PHASE_0, // stopped
-    STEP_PHASE_1, // wait to issue apic interrupt (delay an interval)
-    STEP_PHASE_2,  // sending apic interrupts 
-    STEP_PHASE_3  // terminated
+    STEP_PHASE_1, // attacking
+    STEP_PHASE_2  // terminated
 } APIC_Triggered_State;
 
 
