@@ -140,21 +140,6 @@ static uint64_t sgxlkl_enclave_signal_handler(
     uint16_t* instr_addr = ((uint16_t*)exception_record->context->rip);
     uint16_t opcode = instr_addr ? *instr_addr : 0;
 
-
-    /**
-        * @haohua 
-        * OE will catch seg fault before LKL knowing it. We should turn off 
-        * sgx-step apic timer at point to make the result more precise. 
-        */
-    if (exception_record->code == OE_EXCEPTION_PAGE_FAULT)
-    {
-        apic_timer_deadline();
-        __sgx_step_apic_triggered = STEP_PHASE_2;  
-        sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
-        __sgx_step_app_terminated = 1;
-    }
-    // haohua
-
     /* Emulate illegal instructions in SGX hardware mode */
     if (exception_record->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
