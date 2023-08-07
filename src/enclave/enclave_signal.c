@@ -143,7 +143,7 @@ static uint64_t sgxlkl_enclave_signal_handler(
     /**
     * @haohua 
     * OE will catch seg fault before LKL knowing it. We should turn off 
-    * sgx-step apic timer at point to make the result more precise. 
+    * sgx-step apic timer at this point to make the result more precise. 
     */
     if (exception_record->code == OE_EXCEPTION_PAGE_FAULT)
     {
