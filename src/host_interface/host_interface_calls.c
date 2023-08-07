@@ -122,13 +122,9 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 
 void sgxlkl_host_app_main_end(void)
 {
-    apic_timer_deadline();
-    __sgx_step_apic_triggered = STEP_PHASE_2;  
-    sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
-    __sgx_step_app_terminated = 1;
-    printf("[[ SGX-STEP ]] turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu());
-    printf("[[ ENC ]] ************** Application End   **************\n");
-    printf("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu \n", __aex_count);
+    if (!__sgx_step_app_terminated){
+        printf("[[ ENC ]] ************** Application End   **************\n");
+    }
 } 
 
 void sgxlkl_host_app_main_start(void)
