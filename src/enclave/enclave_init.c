@@ -119,6 +119,9 @@ static void _enter_user_space(
     if (!(proc = __oe_get_isolated_image_entry_point()))
         sgxlkl_fail("failed to obtain user space entry point");
 
+    /* Haohua */
+    oe_host_printf("[[ STRONGBOX ]]: Enclave appliaction entry point: %#lx\n", (void*)proc); 
+
     args.ua_lkl_syscall = lkl_syscall;
     args.ua_sgxlkl_warn = sgxlkl_warn;
     args.ua_sgxlkl_error = sgxlkl_error;
