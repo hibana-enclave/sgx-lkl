@@ -261,7 +261,7 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
     {   
         /* allow attack from anywhere in the in-enclave application by settng up the APIC timer */
         case UD2_OPCODE:
-            printf("[[ SGX-STEP ]] Encounter ud2 instruction \n");
+            sgxlkl_info("[[ SGX-STEP ]] Encounter ud2 instruction \n");
             // using hash can trigger more types of execeptions with issuing only ud2 insrtuction. 
             int hash = (context->r11 * sgx_step_attack_signal_hash_int) % sgx_step_attack_signal_hash_mod; 
             if (hash == sgx_step_attack_signal_hash_target){
