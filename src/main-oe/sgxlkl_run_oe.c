@@ -1569,9 +1569,6 @@ void override_enclave_config(
     if (sgxlkl_config_overridden(SGXLKL_MAX_USER_THREADS))
         econf->max_user_threads = sgxlkl_config_uint64(SGXLKL_MAX_USER_THREADS);
 
-    if (sgxlkl_config_overridden(SGXSTEP_ATTACK_DELAY_TIME_BASE))
-        econf->sgxstep_attack_delay_time_base = sgxlkl_config_uint64(SGXSTEP_ATTACK_DELAY_TIME_BASE);
-
     if (sgxlkl_config_overridden(SGXLKL_ESPINS))
         econf->espins = sgxlkl_config_uint64(SGXLKL_ESPINS);
 

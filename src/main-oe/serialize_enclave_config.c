@@ -481,7 +481,6 @@ void serialize_enclave_config(
     root->objects[cnt++] = encode_wg("wg", &config->wg);
 
     FPFU64(max_user_threads);
-    FPFU64(sgxstep_attack_delay_time_base);
     FPFU64(espins);
     FPFU64(esleep);
     FPFU64(ethreads);

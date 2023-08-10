@@ -355,7 +355,6 @@ static json_result_t json_read_callback(
             JSTRING("wg.peers.endpoint", cfg->wg.peers[i].endpoint);
 
             JU64("max_user_threads", cfg->max_user_threads);
-            JU64("sgxstep_attack_delay_time_base", cfg->sgxstep_attack_delay_time_base);
             JU64("ethreads", cfg->ethreads);
             JU64("espins", cfg->espins);
             JU64("esleep", cfg->esleep);
