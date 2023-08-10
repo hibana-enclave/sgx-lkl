@@ -156,6 +156,8 @@ APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
+const uint64_t ATTACK_TIMER_BASE_TIME = 500; 
+const uint64_t ATTACK_TIMER_RANGE = 1; 
 const int SGX_STEP_INTERVAL = 47; 
 unsigned long long __aex_count = 0; 
 
