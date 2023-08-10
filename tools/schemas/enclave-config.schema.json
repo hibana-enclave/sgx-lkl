@@ -384,7 +384,7 @@
         },
         "sgxstep_attack_delay_time_base" :{
           "$ref": "#/definitions/safe_size_t",
-          "description": "Max. number of user-level thread inside the enclave.",
+          "description": "the minimal interval before the first sgx-step attack. ",
           "default": 200000000,
           "overridable": "SGXSTEP_ATTACK_DELAY_TIME_BASE"
         }, 
