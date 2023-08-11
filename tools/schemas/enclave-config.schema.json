@@ -545,7 +545,7 @@
         "sgxstep_attack_delay": {
           "$ref": "#/definitions/safe_size_t",
           "description": "the interval before the first attack/aex which is issued by sgx-step",
-          "default": 500,
+          "default": 5000,
           "overridable": "SGXSTEP_ATTACK_DELAY"
         }
       }
