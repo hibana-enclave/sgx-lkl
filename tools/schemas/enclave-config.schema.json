@@ -541,6 +541,12 @@
         "io": {
           "$ref": "#/definitions/sgxlkl_io_config_t",
           "description": "I/O configuration."
+        },
+        "sgxstep_attack_delay": {
+          "$ref": "#/definitions/safe_size_t",
+          "description": "the interval before the first attack/aex which is issued by sgx-step",
+          "default": 500,
+          "overridable": "SGXSTEP_ATTACK_DELAY"
         }
       }
     }
