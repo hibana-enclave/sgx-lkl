@@ -2181,7 +2181,7 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
-    info("all is well; irq_count=%d; exiting.. (freq=%d)", __ss_irq_count, SGX_STEP_INTERVAL);
+    info("[[ SGX-STEP-RESULT ]] all is well; irq_count=%d; exiting.. (freq=%d)", __ss_irq_count, SGX_STEP_INTERVAL);
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
 

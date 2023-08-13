@@ -358,7 +358,6 @@ static json_result_t json_read_callback(
             JU64("ethreads", cfg->ethreads);
             JU64("espins", cfg->espins);
             JU64("esleep", cfg->esleep);
-            JU64("sgxstep_attack_delay", cfg->sgxstep_attack_delay);
 
             JPATHT("clock_res.resolution", JSON_TYPE_STRING, {
                 if (strlen(un->string) != 16)
@@ -482,7 +481,7 @@ void sgxlkl_read_enclave_config(
     // Catch modifications to sgxlkl_enclave_config_t early. If this fails,
     // the code above/below needs adjusting for the added/removed settings.
     _Static_assert(
-        sizeof(sgxlkl_enclave_config_t) == 472,
+        sizeof(sgxlkl_enclave_config_t) == 464,
         "sgxlkl_enclave_config_t size has changed");
 
     if (!from)
