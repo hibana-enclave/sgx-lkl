@@ -47,7 +47,6 @@
 #define SGXLKL_ENABLE_SWIOTLB "SGXLKL_ENABLE_SWIOTLB"
 #define SGXLKL_HD_OVERLAY "SGXLKL_HD_OVERLAY"
 #define SGXLKL_HOST_IMPORT_ENV "SGXLKL_HOST_IMPORT_ENV"
-#define SGXSTEP_ATTACK_DELAY "SGXSTEP_ATTACK_DELAY"
 
 #ifndef SGXLKL_RELEASE
 /* These environment variables do not have config settings, they are

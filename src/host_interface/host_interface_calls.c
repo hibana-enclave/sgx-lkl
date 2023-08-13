@@ -23,18 +23,16 @@
 #include "libsgxstep/sched.h"
 #include "libsgxstep/idt.h"
 
-#include "shared/sgxlkl_enclave_config.h"
-#include "host/host_state.h"
-
 int sched_getcpu(void); 
-
-extern sgxlkl_host_state_t sgxlkl_host_state;
 
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
 extern unsigned int sgx_lkl_aex_cnt; 
 extern int __sgx_step_app_terminated; 
 extern APIC_Triggered_State __sgx_step_apic_triggered; 
 extern unsigned long long __aex_count; 
+extern uint64_t ATTACK_TIMER_BASE_TIME; 
+extern uint64_t ATTACK_TIMER_RANGE; 
+
 
 extern void sgx_step_attack_signal_timer_handler(int signum); 
 
@@ -145,7 +143,6 @@ void sgxlkl_host_app_main_start(void)
 
 void sgxlkl_host_sgx_step_attack_setup(void)
 {
-    sgxlkl_enclave_config_t* econf = &sgxlkl_host_state.enclave_config;
     __aex_count = 0; 
     if (__sgx_step_apic_triggered != STEP_PHASE_0){
         sgxlkl_host_fail("Don't issue ud2 more thane once...."); 
@@ -156,10 +153,10 @@ void sgxlkl_host_sgx_step_attack_setup(void)
     map_idt(&idt);
     install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
     srand(time(NULL)); 
-    const uint64_t delay_time = econf->sgxstep_attack_delay + rand() % 1; 
+    const uint64_t delay_time = ATTACK_TIMER_BASE_TIME + rand() % ATTACK_TIMER_RANGE; 
     info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
-    // apic_timer_oneshot(IRQ_VECTOR);
-    // apic_timer_irq((unsigned long long)delay_time); 
+    apic_timer_oneshot(IRQ_VECTOR);
+    apic_timer_irq((unsigned long long)delay_time); 
 }
 
 void sgxlkl_host_hw_cpuid(
