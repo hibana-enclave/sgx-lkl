@@ -171,7 +171,8 @@ void aep_cb_func(void)
          	// printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
         	__aex_count += 1; 
         	apic_timer_irq(SGX_STEP_INTERVAL);
-        }else if (gprsgx.fields.reserved != 0xDE77 && __ss_irq_count == 1){
+        }
+        else if (gprsgx.fields.reserved != 0xDE77 && __ss_irq_count == 1){
         	/* for example, `movq %%gs:32, %%rax\n` and `movq $0xDE77, (%%rax)` two instructions should be placed at the beginning of a targeted function */ 
 		    sgxlkl_host_fail(" **** [[ SGX-STEP-ERROR ]] The value in SSA's resreved area is not 0xDE77. To fix this error, write 0xDE77 to ssa.reserved (which is in %%gs:32) and increase `attack_timer_base_time`  **** ");
         }

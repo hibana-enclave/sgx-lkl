@@ -260,7 +260,7 @@ int lthread_run(void)
             "MOVDQA     %%xmm0, %%xmm15 \n" 
         : : :);
     /* ------------------------------------------------------------------------------------------- */
-    sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
+    // sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
     uint64_t gprssa_address_reserved = (uint64_t)tcs + 2 * SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + SGX_GPRSGX_RESERVED_OFFSET; 
     __asm__ __volatile__("movq %0, %%gs:32\n" : : "r"(gprssa_address_reserved));
     __asm__ __volatile__(
