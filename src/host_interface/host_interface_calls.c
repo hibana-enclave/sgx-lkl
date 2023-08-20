@@ -151,7 +151,7 @@ void sgxlkl_host_sgx_step_attack_setup(void)
     info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
     idt_t idt = {0};
     map_idt(&idt);
-    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR);
+    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR); // FIXME: the installation of kernel irq handler may freeze the kernel?
     srand(time(NULL)); 
     const uint64_t delay_time = ATTACK_TIMER_BASE_TIME + rand() % ATTACK_TIMER_RANGE; 
     info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
