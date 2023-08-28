@@ -98,7 +98,6 @@ static int enclave_return_status = INT_MAX;
 // Counts the number of exited ethreads
 static _Atomic(int) exited_ethread_count = 0;
 
-unsigned *aex_counter_ptr;  
 /**************************************************************************************************************************/
 
 #ifdef DEBUG
@@ -123,6 +122,7 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 /**************************************************************************************************************************/
 
+unsigned *aex_counter_ptr;  
 void aep_cb_func(void)
 {
     gprsgx_region_t gprsgx; 
@@ -2057,9 +2057,7 @@ int main(int argc, char* argv[], char* envp[])
 
     // start attacking when creating etrhead 
     unsigned num_of_function = 100; 
-    unsigned aex_counter[num_of_function];
-    for (int i = 0; i < num_of_function; i++){ aex_counter[i] = 0; }
-    aex_counter_ptr = aex_counter; 
+    aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * num_of_function); 
 
     info_event("Registering AEX handler...");                           // haohua          
     register_aep_cb(aep_cb_func);                                       // haohua
@@ -2136,5 +2134,7 @@ int main(int argc, char* argv[], char* envp[])
         "SGX-LKL-OE exit: exited_ethread_count=%i exit_status=%i\n",
         exited_ethread_count,
         exit_status);
+
+    free(aex_counter_ptr); 
     return exit_status;
 }
