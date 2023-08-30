@@ -144,14 +144,31 @@ void output_aex_count_result(char const* const fileName, char const* const aex_c
     fprintf(aex_count_file, "func_name\taex\n");
     char line[1024 + 10]; // PATH_MAX is 1024 
     char function_namelist[1024]; // PATH_MAX is 1024. 
-    int function_id; 
+    unsigned function_id; 
     while (fgets(line, sizeof(line), function_name_file)) {
-        sscanf(line, "%s %d", function_namelist, &function_id); 
+        sscanf(line, "%s %u", function_namelist, &function_id); 
         // printf("function name: %s, function id: %d\n", function_namelist, function_id); 
         fprintf(aex_count_file, "%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
     }
     fclose(function_name_file);
     fclose(aex_count_file); 
+}
+
+unsigned read_num_of_function(char const* const fileName){
+    FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
+    
+    if(function_name_file == NULL){
+        sgxlkl_host_fail("Can not open function name file or aex count file"); 
+    }   
+
+    char line[1024 + 10]; // PATH_MAX is 1024 
+    char function_namelist[1024]; // PATH_MAX is 1024. 
+    unsigned max_function_id; 
+    fgets(line, sizeof(line), function_name_file); 
+    sscanf(line, "%s %u", function_namelist, &max_function_id); 
+    fclose(function_name_file);
+
+    return max_function_id; 
 }
 
 static void version()
