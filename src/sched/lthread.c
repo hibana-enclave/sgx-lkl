@@ -230,48 +230,23 @@ int lthread_run(void)
     int dequeued;
 
     /* use the XMM0 context state in SSA */ 
-    sgxlkl_info("Start lthread modification Nelly\n");
+    // sgxlkl_info("Start lthread modification Nelly\n");
     oe_sgx_td_t* td = oe_sgx_get_td();
-    sgxlkl_info("DEBUG td address: %p\n", td);
+    // sgxlkl_info("DEBUG td address: %p\n", td);
     sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * SSA_PAGE_SIZE));
-    sgxlkl_info("DEBUG tcs address: %p\n", tcs);
+    // sgxlkl_info("DEBUG tcs address: %p\n", tcs);
 
     /* ------------------------------------------------------------------------------------------ */
     // Enclave Layout: https://github.com/openenclave/openenclave/blob/master/host/README.md
-    uint64_t xsave_xmm0_address = (uint64_t)tcs + 1 * SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET;
-    sgxlkl_info("DEBUG ssa xmm state address: %p\n", xsave_xmm0_address);
-    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_xmm0_address));
-    __asm__ __volatile__(
-            "PCMPEQB    %%xmm0, %%xmm0\n\t" // the CPU on NUC only support SSE instruction set. 
-            "MOVDQA     %%xmm0, %%xmm1 \n"        
-            "MOVDQA     %%xmm0, %%xmm2 \n"
-            "MOVDQA     %%xmm0, %%xmm3 \n"
-            "MOVDQA     %%xmm0, %%xmm4 \n"
-            "MOVDQA     %%xmm0, %%xmm5 \n"
-            "MOVDQA     %%xmm0, %%xmm6 \n"
-            "MOVDQA     %%xmm0, %%xmm7 \n"
-            "MOVDQA     %%xmm0, %%xmm8 \n"
-            "MOVDQA     %%xmm0, %%xmm9 \n"
-            "MOVDQA     %%xmm0, %%xmm10 \n"
-            "MOVDQA     %%xmm0, %%xmm11 \n"
-            "MOVDQA     %%xmm0, %%xmm12 \n"
-            "MOVDQA     %%xmm0, %%xmm13 \n"
-            "MOVDQA     %%xmm0, %%xmm14 \n"
-            "MOVDQA     %%xmm0, %%xmm15 \n" 
-        : : :);
-    /* ------------------------------------------------------------------------------------------- */
-    // sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
     uint64_t gprssa_address_reserved = (uint64_t)tcs + 2 * SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + SGX_GPRSGX_RESERVED_OFFSET; 
-    __asm__ __volatile__("movq %0, %%gs:32\n" : : "r"(gprssa_address_reserved));
     __asm__ __volatile__(
-            "movq %%gs:32, %%rax\n"
-            "movq $0x0, (%%rax)"
+        "movq %0, %%gs:24\n" 
+        : : "r"(gprssa_address_reserved));
+    __asm__ __volatile__(
+        "movq %%gs:24, %%rax\n"
+        "movq $0x0, (%%rax)"
         : :); 
     /* ------------------------------------------------------------------------------------------- */
-    // ==== sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2 * 4096 - 184 + 1); // add 1 to mismatch a slot for a whole pointer. 
-    // ==== sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
-    // ==== __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));     
-
 
     /* Check if the scheduler was initialized. */
     if (sched == NULL)

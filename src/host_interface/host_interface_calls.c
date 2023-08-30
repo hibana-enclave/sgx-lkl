@@ -124,13 +124,9 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 
 void sgxlkl_host_app_main_end(void)
 {
-    apic_timer_deadline();
-    __sgx_step_apic_triggered = STEP_PHASE_2;  
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
     __sgx_step_app_terminated = 1;
-    printf("[[ SGX-STEP ]] turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu());
     printf("[[ ENC ]] ************** Application End   **************\n");
-    printf("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu \n", __aex_count);
 } 
 
 void sgxlkl_host_app_main_start(void)
@@ -138,25 +134,6 @@ void sgxlkl_host_app_main_start(void)
     __sgx_step_app_terminated = 0;
     __sgx_lkl_aex_cnt_aux = 0;
     printf("[[ ENC ]] ************** Application Start **************\n");
-}
-
-
-void sgxlkl_host_sgx_step_attack_setup(void)
-{
-    __aex_count = 0; 
-    if (__sgx_step_apic_triggered != STEP_PHASE_0){
-        sgxlkl_host_fail("Don't issue ud2 more thane once...."); 
-    }
-    __sgx_step_apic_triggered = STEP_PHASE_1; 
-    info("Establishing user-space APIC/IDT mappings at CPU %d...", sched_getcpu()); 
-    idt_t idt = {0};
-    map_idt(&idt);
-    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR); // FIXME: the installation of kernel irq handler may freeze the kernel?
-    srand(time(NULL)); 
-    const uint64_t delay_time = ATTACK_TIMER_BASE_TIME + rand() % ATTACK_TIMER_RANGE; 
-    info("[[ SGX-STEP ]] attacks will start after %llu cpu cycles...", (unsigned long long)delay_time); 
-    apic_timer_oneshot(IRQ_VECTOR);
-    apic_timer_irq((unsigned long long)delay_time); 
 }
 
 void sgxlkl_host_hw_cpuid(
