@@ -142,10 +142,54 @@ const uint64_t ATTACK_TIMER_RANGE = 1;
 const uint64_t SGX_STEP_INTERVAL = 47; 
 unsigned long long __aex_count = 0; 
 
+unsigned *aex_counter_ptr = NULL; 
+unsigned num_of_function = 0; 
+
 void aep_cb_func(void)
 {
+    gprsgx_region_t gprsgx; 
+    edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
+    unsigned function_id = gprsgx.fields.reserved; 
+    *(aex_counter_ptr + function_id) += 1; 
 }
 
+void output_aex_count_result(char const* const fileName, char const* const aex_count_path){
+    FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
+    FILE *aex_count_file = fopen(aex_count_path, "w");
+    
+    if(function_name_file == NULL || aex_count_file == NULL){
+        sgxlkl_host_fail("Can not open function name file or aex count file"); 
+    }
+
+    fprintf(aex_count_file, "func_name\taex\n");
+    char line[1024 + 10]; // PATH_MAX is 1024 
+    char function_namelist[1024]; // PATH_MAX is 1024. 
+    unsigned function_id; 
+    while (fgets(line, sizeof(line), function_name_file)) {
+        sscanf(line, "%s %u", function_namelist, &function_id); 
+        // printf("function name: %s, function id: %d\n", function_namelist, function_id); 
+        fprintf(aex_count_file, "%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+    }
+    fclose(function_name_file);
+    fclose(aex_count_file); 
+}
+
+unsigned read_num_of_function(char const* const fileName){
+    FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
+    
+    if(function_name_file == NULL){
+        sgxlkl_host_fail("Can not open function name file or aex count file"); 
+    }   
+
+    char line[1024 + 10]; // PATH_MAX is 1024 
+    char function_namelist[1024]; // PATH_MAX is 1024. 
+    unsigned max_function_id; 
+    fgets(line, sizeof(line), function_name_file); 
+    sscanf(line, "%s %u", function_namelist, &max_function_id); 
+    fclose(function_name_file);
+
+    return max_function_id; 
+}
 
 static void version()
 {
@@ -1786,6 +1830,8 @@ int main(int argc, char* argv[], char* envp[])
         {"isolated-image", required_argument, 0, 'i'},
         {"host-config", required_argument, 0, 'H'},
         {"enclave-config", required_argument, 0, 'c'},
+        {"function-name", required_argument, 0, 'n'}, // haohua 
+        {"aex-count-output", required_argument, 0, 'o'}, // haohua 
         {0, 0, 0, 0}};
 
     sgxlkl_host_state.enclave_config = sgxlkl_enclave_config_default;
@@ -1803,6 +1849,12 @@ int main(int argc, char* argv[], char* envp[])
                 break;
             case HW_RELEASE_MODE:
                 enclave_mode_cmdline = HW_RELEASE_MODE;
+                break;
+            case 'n':   // haohua  
+                function_name_path = optarg; 
+                break; 
+            case 'o':
+                aex_count_path = optarg; 
                 break;
             case 'e':
                 enclave_image_provided = true;
@@ -2072,6 +2124,7 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
+    aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * num_of_function); 
     // start attacking when creating etrhead 
     // info_event("Registering AEX handler...");                           // haohua          
     register_aep_cb(aep_cb_func);                                       // haohua
@@ -2151,6 +2204,11 @@ int main(int argc, char* argv[], char* envp[])
     info("[[ SGX-STEP-RESULT ]] all is well; irq_count=%d; exiting.. (freq=%lu)", __ss_irq_count, SGX_STEP_INTERVAL);
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
+
+    // print the aex count result. 
+    output_aex_count_result(function_name_path, aex_count_path); 
+    free(aex_counter_ptr); 
+    aex_counter_ptr = NULL; 
 
     return exit_status;
 }
