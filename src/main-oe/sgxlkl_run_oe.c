@@ -133,9 +133,9 @@ void aep_cb_func(void)
     *(aex_counter_ptr + function_id) += 1; 
 }
 
-void output_aex_count_result(char const* const fileName){
+void output_aex_count_result(char const* const fileName, char const* const aex_count_path){
     FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
-    FILE *aex_count_file = fopen("example.txt", "w");
+    FILE *aex_count_file = fopen(aex_count_path, "w");
     
     if(function_name_file == NULL || aex_count_file == NULL){
         sgxlkl_host_fail("Can not open function name file or aex count file"); 
@@ -1748,6 +1748,7 @@ int main(int argc, char* argv[], char* envp[])
     char* host_config_path = NULL;
     char* enclave_config_path = NULL;
     char* function_name_path = NULL; 
+    char* aex_count_path = NULL; 
     char libsgxlkl[PATH_MAX];
     char libsgxlkl_user[PATH_MAX];
     // const sgxlkl_host_config_t* hconf = &host_state.config;
@@ -1794,6 +1795,7 @@ int main(int argc, char* argv[], char* envp[])
         {"host-config", required_argument, 0, 'H'},
         {"enclave-config", required_argument, 0, 'c'},
         {"function-name", required_argument, 0, 'n'}, // haohua 
+        {"aex-count-output", required_argument, 0, 'o'}, // haohua 
         {0, 0, 0, 0}};
 
     sgxlkl_host_state.enclave_config = sgxlkl_enclave_config_default;
@@ -1815,6 +1817,9 @@ int main(int argc, char* argv[], char* envp[])
             case 'n':   // haohua  
                 function_name_path = optarg; 
                 break; 
+            case 'o':
+                aex_count_path = optarg; 
+                break;
             case 'e':
                 enclave_image_provided = true;
                 strcpy(libsgxlkl, optarg);
@@ -2161,10 +2166,9 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
+    output_aex_count_result(function_name_path, aex_count_path); 
     free(aex_counter_ptr); 
     aex_counter_ptr = NULL; 
-
-    output_aex_count_result(function_name_path); 
 
     return exit_status;
 }
