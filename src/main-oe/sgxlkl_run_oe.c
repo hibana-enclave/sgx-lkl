@@ -122,13 +122,36 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 /**************************************************************************************************************************/
 
-unsigned *aex_counter_ptr;  
+unsigned *aex_counter_ptr = NULL; 
+unsigned num_of_function = 0; 
+
 void aep_cb_func(void)
 {
     gprsgx_region_t gprsgx; 
     edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
     unsigned function_id = gprsgx.fields.reserved; 
     *(aex_counter_ptr + function_id) += 1; 
+}
+
+void output_aex_count_result(char const* const fileName){
+    FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
+    FILE *aex_count_file = fopen("example.txt", "w");
+    
+    if(function_name_file == NULL || aex_count_file == NULL){
+        sgxlkl_host_fail("Can not open function name file or aex count file"); 
+    }
+
+    fprintf(aex_count_file, "func_name\taex\n");
+    char line[1024 + 10]; // PATH_MAX is 1024 
+    char function_namelist[1024]; // PATH_MAX is 1024. 
+    int function_id; 
+    while (fgets(line, sizeof(line), function_name_file)) {
+        sscanf(line, "%s %d", function_namelist, &function_id); 
+        // printf("function name: %s, function id: %d\n", function_namelist, function_id); 
+        fprintf(aex_count_file, "%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+    }
+    fclose(function_name_file);
+    fclose(aex_count_file); 
 }
 
 static void version()
@@ -1724,6 +1747,7 @@ int main(int argc, char* argv[], char* envp[])
 {
     char* host_config_path = NULL;
     char* enclave_config_path = NULL;
+    char* function_name_path = NULL; 
     char libsgxlkl[PATH_MAX];
     char libsgxlkl_user[PATH_MAX];
     // const sgxlkl_host_config_t* hconf = &host_state.config;
@@ -1769,6 +1793,7 @@ int main(int argc, char* argv[], char* envp[])
         {"isolated-image", required_argument, 0, 'i'},
         {"host-config", required_argument, 0, 'H'},
         {"enclave-config", required_argument, 0, 'c'},
+        {"function-name", required_argument, 0, 'n'}, // haohua 
         {0, 0, 0, 0}};
 
     sgxlkl_host_state.enclave_config = sgxlkl_enclave_config_default;
@@ -1787,6 +1812,9 @@ int main(int argc, char* argv[], char* envp[])
             case HW_RELEASE_MODE:
                 enclave_mode_cmdline = HW_RELEASE_MODE;
                 break;
+            case 'n':   // haohua  
+                function_name_path = optarg; 
+                break; 
             case 'e':
                 enclave_image_provided = true;
                 strcpy(libsgxlkl, optarg);
@@ -2056,9 +2084,7 @@ int main(int argc, char* argv[], char* envp[])
     ethread_args_t ethreads_args[econf->ethreads];
 
     // start attacking when creating etrhead 
-    unsigned num_of_function = 100; 
     aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * num_of_function); 
-
     info_event("Registering AEX handler...");                           // haohua          
     register_aep_cb(aep_cb_func);                                       // haohua
 
@@ -2136,5 +2162,9 @@ int main(int argc, char* argv[], char* envp[])
         exit_status);
 
     free(aex_counter_ptr); 
+    aex_counter_ptr = NULL; 
+
+    output_aex_count_result(function_name_path); 
+
     return exit_status;
 }
