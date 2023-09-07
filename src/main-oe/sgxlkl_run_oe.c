@@ -132,51 +132,10 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 
 #endif
 
-
-/* Configure and check attacker untrusted runtime environment. */
-void attacker_config_runtime(void)
-{
-    // ASSERT( !claim_cpu(0) );
-    ASSERT( !prepare_system_for_benchmark(PSTATE_PCT) );
-    print_system_settings();
-
-    if (isatty(fileno(stdout)))
-    {
-        info("WARNING: interactive terminal detected; known to cause ");
-        info("unstable timer intervals! Use stdout file redirection for ");
-        info("precise single-stepping results...");
-    }
-
-    register_enclave_info();
-    print_enclave_info();
-}
-
 /**************************************************************************************************************************/
-APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
-int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
-
-/* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const uint64_t ATTACK_TIMER_BASE_TIME = 500; 
-const uint64_t ATTACK_TIMER_RANGE = 1; 
-const uint64_t SGX_STEP_INTERVAL = 47; 
-unsigned long long __aex_count = 0; 
-
 void aep_cb_func(void)
 {
-    if (__sgx_step_apic_triggered == STEP_PHASE_1 && (__ss_irq_count > 0) && (!__sgx_step_app_terminated)){
-        gprsgx_region_t gprsgx; 
-        edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-        if (gprsgx.fields.reserved == 0xDE77){
-        	// uint64_t erip = edbgrd_erip() - (uint64_t) get_enclave_base();
-         	// printf("[[ sgx-step ]] ^^ enclave RIP=%#lx ^^\n", erip);    
-        	__aex_count += 1; 
-        	apic_timer_irq(SGX_STEP_INTERVAL);
-        }
-        else if (gprsgx.fields.reserved != 0xDE77 && __ss_irq_count == 1){
-        	/* for example, `movq %%gs:32, %%rax\n` and `movq $0xDE77, (%%rax)` two instructions should be placed at the beginning of a targeted function */ 
-		    sgxlkl_host_fail(" **** [[ SGX-STEP-ERROR ]] The value in SSA's resreved area is not 0xDE77. To fix this error, write 0xDE77 to ssa.reserved (which is in %%gs:32) and increase `attack_timer_base_time`  **** ");
-        }
-    }
+    
 }
 
 
