@@ -18,7 +18,4 @@ bool sgxlkl_in_sw_debug_mode();
 bool sgxlkl_in_hw_debug_mode();
 bool sgxlkl_in_hw_release_mode();
 
-void sgxlkl_app_main_end_notify(); 
-void sgxlkl_app_main_start_notify(); 
-
 #endif /* ENCLAVE_OE_H */

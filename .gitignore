@@ -1,12 +1,6 @@
 build
 build_musl
 
-openenclave/
-lkl/
-sgx-lkl-musl/
-sgx-step/
-
-
 third_party/curl/
 third_party/devicemapper/
 third_party/e2fsprogs/
@@ -40,6 +34,3 @@ user/stubs.o
 
 .vscode/*
 !.vscode/extensions.json
-openenclave/
-sgx-lkl-musl/
-sgx-step/

@@ -39,8 +39,6 @@ enclave {
     };
 
     untrusted {
-        void sgxlkl_host_app_main_end(void); 
-        void sgxlkl_host_app_main_start(void);  
 
         // Host call for ethreads to sleep outside of the enclave
         void sgxlkl_host_idle_ethread(
