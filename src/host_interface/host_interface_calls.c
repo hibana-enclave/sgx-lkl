@@ -1,12 +1,40 @@
 #include <cpuid.h>
 #include <errno.h>
 #include <host/sgxlkl_util.h>
+
 #include <host/vio_host_event_channel.h>
 #include <host/virtio_debug.h>
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/mman.h>
+
+#include <string.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <sys/time.h>
+
+
+#include "libsgxstep/enclave.h"
+#include "libsgxstep/debug.h"
+#include "libsgxstep/pt.h"
+#include "libsgxstep/config.h"
+#include "libsgxstep/apic.h"
+#include "libsgxstep/sched.h"
+#include "libsgxstep/idt.h"
+
+int sched_getcpu(void); 
+
+extern unsigned int __sgx_lkl_aex_cnt_aux; 
+extern unsigned int sgx_lkl_aex_cnt; 
+extern int __sgx_step_app_terminated; 
+extern APIC_Triggered_State __sgx_step_apic_triggered; 
+extern unsigned long long __aex_count; 
+extern uint64_t ATTACK_TIMER_BASE_TIME; 
+extern uint64_t ATTACK_TIMER_RANGE; 
+
+
+extern void sgx_step_attack_signal_timer_handler(int signum); 
 
 /* Function to register the enclaves signal handler */
 extern void register_enclave_signal_handler(void* signal_handler);
@@ -94,6 +122,24 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
     return mprotect(addr, len, prot);
 }
 
+void sgxlkl_host_app_main_end(void)
+{
+    if (!__sgx_step_app_terminated){
+        sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
+        __sgx_step_app_terminated = 1;
+        // sgxlkl_host_info("[[ SGX-STEP ]] turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu());
+        sgxlkl_host_info("[[ ENC ]] ************** Application End   **************\n");
+        // sgxlkl_host_info("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu \n", __aex_count);
+    }
+} 
+
+void sgxlkl_host_app_main_start(void)
+{
+    __sgx_step_app_terminated = 0;
+    __sgx_lkl_aex_cnt_aux = 0;
+    sgxlkl_host_info("[[ ENC ]] ************** Application Start **************\n");
+}
+
 void sgxlkl_host_hw_cpuid(
     uint32_t leaf,
     uint32_t subleaf,
@@ -102,6 +148,7 @@ void sgxlkl_host_hw_cpuid(
     uint32_t* ecx,
     uint32_t* edx)
 {
+
     if (eax)
         *eax = 0;
 

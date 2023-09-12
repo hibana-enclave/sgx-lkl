@@ -49,6 +49,18 @@
 #include "openenclave/corelibc/oestring.h"
 #include "openenclave/internal/safecrt.h"
 
+// Nelly
+#include "openenclave/bits/sgx/sgxtypes.h"
+#include "openenclave/internal/sgx/td.h"
+#define SSA_PAGE_SIZE               4096
+#define SSA_XSAVE_OFFSET            0          // xsave is at the start of SSA area 
+#define SSA_XSAVE_XMM0_OFFSET       160
+#define SSA_XSAVE_XMM0_SIZE         16      // XMM0 register size is 16 bytes (128 bites)    
+#define SSA_XSAVE_YMM0_OFFSET       576   // 512 + 64 = 576 
+#define SSA_XSAVE_YMM0_SIZE         16      /// YMM0[255:128] register size is 16 bytse(128 bites), overall YMM0 is 32 bytes (256 bits)
+#define SGX_GPRSGX_SIZE             184
+#define SGX_GPRSGX_RESERVED_OFFSET  164
+
 extern int vio_enclave_wakeup_event_channel(void);
 
 static void _exec(void* lt);
@@ -216,6 +228,24 @@ int lthread_run(void)
     size_t pauses = sleepspins;
     int spins = futex_wake_spins;
     int dequeued;
+
+    /* use the XMM0 context state in SSA */ 
+    sgxlkl_info("Start lthread modification Nelly\n");
+    oe_sgx_td_t* td = oe_sgx_get_td();
+    sgxlkl_info("DEBUG td address: %p\n", td);
+    sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * SSA_PAGE_SIZE));
+    sgxlkl_info("DEBUG tcs address: %p\n", tcs);
+
+    /* ------------------------------------------------------------------------------------------- */
+    // sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
+    uint64_t gprssa_address_reserved = (uint64_t)tcs + 2 * SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + SGX_GPRSGX_RESERVED_OFFSET; 
+    __asm__ __volatile__(
+        "movq %0, %%gs:24\n" : : "r"(gprssa_address_reserved));
+    __asm__ __volatile__(
+            "movq %%gs:24, %%r11\n"
+            "movq $0x0, (%%r11)"
+        : :); 
+    /* ------------------------------------------------------------------------------------------- */
 
     /* Check if the scheduler was initialized. */
     if (sched == NULL)

@@ -27,10 +27,42 @@ We were able to read the secret because the memory is unprotected.
 
 ## SGX-LKL (hardware enclave)
 
+
+### Setting Up 
+
+This step in only needed when SGX-LKL is installed the first time. 
+
+To use docker without `sudo` (read this post <https://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo>)
+```sh 
+sudo groupadd docker
+sudo usermod -aG docker $USER
+sudo setfacl -m user:$USER:rw /var/run/docker.sock
+```
+
+Install SGX-LKL 
+```sh 
+sudo -E make install
+```
+
+And add SGX-LKL to the search path by editing `~/.bashrc`
+
+```sh 
+PATH="/opt/sgx-lkl/bin:$PATH"
+```
+
+Then make sure to setup the environment variables for SGX-LKL (read the `README.md` in SGX-LKL homepage)
+
+```sh
+sgx-lkl-setup
+```
+
+### Building the Image 
+
 Build the SGX-LKL rootfs disk image and run the `read_secret` program inside an enclave:
 ```sh
-sgx-lkl-disk create --docker=attackme --size 5M --encrypt --key-file rootfs.img
-SGXLKL_HD_KEY=rootfs.img.key sgx-lkl-run-oe --hw-debug rootfs.img /read_secret
+/opt/sgx-lkl/bin/sgx-lkl-disk create --docker=attackme --size 5M --encrypt --key-file rootfs.img
+SGXLKL_HD_KEY=rootfs.img.key sudo /opt/sgx-lkl/bin/sgx-lkl-run-oe --hw-debug rootfs.img /read_secret
+
 # Ready to be attacked...
 # Press any key to exit
 ```
