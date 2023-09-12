@@ -1163,6 +1163,17 @@ static _Atomic(bool) _is_lkl_terminating = false;
 /* Terminate LKL with a given exit status */
 void lkl_terminate(int exit_status)
 {
+
+    {
+        struct timespec endtime, runtime;
+        clock_gettime(CLOCK_MONOTONIC, &endtime);
+        runtime = timespec_diff(endtime, sgxlkl_app_starttime);
+        sgxlkl_info(
+            "Application runtime: %lld.%.9lds\n",
+            runtime.tv_sec,
+            runtime.tv_nsec);
+    }
+
     int ret;
     long res;
 
@@ -1193,16 +1204,6 @@ void lkl_terminate(int exit_status)
             SGXLKL_ASSERT(false);
     }
 
-    if (getenv_bool("SGXLKL_PRINT_APP_RUNTIME", 0))
-    {
-        struct timespec endtime, runtime;
-        clock_gettime(CLOCK_MONOTONIC, &endtime);
-        runtime = timespec_diff(endtime, sgxlkl_app_starttime);
-        sgxlkl_info(
-            "Application runtime: %lld.%.9lds\n",
-            runtime.tv_sec,
-            runtime.tv_nsec);
-    }
 
     // Switch back to root so we can unmount all filesystems
     SGXLKL_VERBOSE("calling lkl_sys_chdir(\"/\")\n");

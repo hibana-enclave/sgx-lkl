@@ -119,11 +119,17 @@ static void _enter_user_space(
     if (!(proc = __oe_get_isolated_image_entry_point()))
         sgxlkl_fail("failed to obtain user space entry point");
 
+    /* Haohua */
+    sgxlkl_info("((StrongBox)) enclave appliaction entry point: %#lx\n", (void*)proc); 
+
     args.ua_lkl_syscall = lkl_syscall;
     args.ua_sgxlkl_warn = sgxlkl_warn;
     args.ua_sgxlkl_error = sgxlkl_error;
     args.ua_sgxlkl_fail = sgxlkl_fail;
     args.ua_enclave_mmap = enclave_mmap;
+    args.ua_sgxlkl_app_main_start_notify = sgxlkl_app_main_start_notify; 
+    args.ua_sgxlkl_app_main_end_notify = sgxlkl_app_main_end_notify; 
+
     args.argc = argc;
     args.argv = argv;
     args.stack = stack;

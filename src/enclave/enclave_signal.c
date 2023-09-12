@@ -7,6 +7,7 @@
 
 #include <lkl_host.h>
 #include <lkl/setup.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <openenclave/enclave.h>
@@ -125,6 +126,17 @@ static uint64_t sgxlkl_enclave_signal_handler(
     uint16_t* instr_addr = ((uint16_t*)exception_record->context->rip);
     uint16_t opcode = instr_addr ? *instr_addr : 0;
 
+    /**
+    * @haohua 
+    * OE will catch seg fault before LKL knowing it. We should turn off 
+    * sgx-step apic timer at this point to make the result more precise. 
+    */
+    if (exception_record->code == OE_EXCEPTION_PAGE_FAULT)
+    {
+        sgxlkl_host_app_main_end(); 
+    }
+    // haohua
+
     /* Emulate illegal instructions in SGX hardware mode */
     if (exception_record->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {
@@ -232,7 +244,7 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
     char* instruction_name = "";
 
     switch (opcode)
-    {
+    {   
         case OE_CPUID_OPCODE:
             rax = 0xaa, rbx = 0xbb, rcx = 0xcc, rdx = 0xdd;
             if (context->rax != 0xff)
@@ -273,7 +285,7 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
                 instruction_name);
     }
 
-    /* Skip over the illegal instruction. */
+    /* Skip over the illegal instruction (note: it will skip the invalid ud2 instruction which is issued by the attacker). */
     context->rip += 2;
 }
 

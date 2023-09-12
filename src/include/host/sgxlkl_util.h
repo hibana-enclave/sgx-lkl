@@ -4,6 +4,13 @@
 #include <stdint.h>
 #include <unistd.h>
 
+typedef enum {
+    STEP_PHASE_0, // stopped
+    STEP_PHASE_1, // attacking
+    STEP_PHASE_2  // terminated
+} APIC_Triggered_State;
+
+
 void sgxlkl_host_fail(char* msg, ...) __attribute__((noreturn));
 void sgxlkl_host_err(char* msg, ...);
 void sgxlkl_host_warn(char* msg, ...);

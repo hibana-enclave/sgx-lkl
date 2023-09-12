@@ -44,6 +44,17 @@ long __sgxlkl_log_syscall(
 **==============================================================================
 */
 
+void sgxlkl_app_main_start_notify(void)
+{
+    return __sgxlkl_userargs->ua_sgxlkl_app_main_start_notify(); 
+}
+
+void sgxlkl_app_main_end_notify(void)
+{
+    return __sgxlkl_userargs->ua_sgxlkl_app_main_end_notify(); 
+}
+
+
 void sgxlkl_warn(const char* msg, ...)
 {
     char buf[1024];
