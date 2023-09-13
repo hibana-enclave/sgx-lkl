@@ -28,6 +28,7 @@ int sched_getcpu(void);
 extern unsigned int __sgx_lkl_aex_cnt_aux; 
 extern unsigned int sgx_lkl_aex_cnt; 
 extern int __sgx_step_app_terminated; 
+extern int __sgx_lkl_app_started; 
 extern APIC_Triggered_State __sgx_step_apic_triggered; 
 extern unsigned long long __aex_count; 
 extern uint64_t ATTACK_TIMER_BASE_TIME; 
@@ -126,6 +127,7 @@ void sgxlkl_host_app_main_end(void)
 {
     sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
     __sgx_step_app_terminated = 1;
+    __sgx_lkl_app_started = 0; 
     printf("[[ ENC ]] ************** Application End   **************\n");
 } 
 
@@ -133,6 +135,7 @@ void sgxlkl_host_app_main_start(void)
 {
     __sgx_step_app_terminated = 0;
     __sgx_lkl_aex_cnt_aux = 0;
+    __sgx_lkl_app_started = 1; 
     printf("[[ ENC ]] ************** Application Start **************\n");
 }
 

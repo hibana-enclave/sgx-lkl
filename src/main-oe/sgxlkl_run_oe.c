@@ -135,6 +135,7 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 /**************************************************************************************************************************/
 APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
+int __sgx_lkl_app_started = 0; 
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 const uint64_t ATTACK_TIMER_BASE_TIME = 500; 
@@ -149,10 +150,13 @@ unsigned num_of_function = 0;
 
 void aep_cb_func(void)
 {
-    gprsgx_region_t gprsgx; 
-    edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-    unsigned function_id = gprsgx.fields.reserved; 
-    *(aex_counter_ptr + function_id) += 1; 
+    if (__sgx_lkl_app_started){
+        gprsgx_region_t gprsgx; 
+        edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
+        unsigned function_id = gprsgx.fields.reserved; 
+        *(aex_counter_ptr + function_id) += 1; 
+        printf("**DEBUG**: function_id = %u, num_of_function = %u\n", function_id, num_of_function); 
+    }
 }
 
 void output_aex_count_result(char const* const function_name_path, char const* const aex_count_path){
@@ -189,8 +193,8 @@ void output_aex_count_result(char const* const function_name_path, char const* c
     if (aex_count_file) fclose(aex_count_file); 
 }
 
-unsigned read_num_of_function(char const* const fileName){
-    FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
+unsigned read_num_of_function(char const* const function_name_path){
+    FILE *function_name_file = fopen(function_name_path, "r"); /* should check the result */
     
     if(function_name_file == NULL){
         sgxlkl_host_fail("Can not open function name file !\n"); 
@@ -2139,6 +2143,7 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
+    num_of_function = read_num_of_function(function_name_path);
     aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * num_of_function); 
     memset(aex_counter_ptr, 0, sizeof(unsigned) * num_of_function); 
 
