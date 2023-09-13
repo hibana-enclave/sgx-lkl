@@ -2140,6 +2140,8 @@ int main(int argc, char* argv[], char* envp[])
     ethread_args_t ethreads_args[econf->ethreads];
 
     aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * num_of_function); 
+    memset(aex_counter_ptr, 0, sizeof(unsigned) * num_of_function); 
+
     // start attacking when creating etrhead 
     // info_event("Registering AEX handler...");                           // haohua          
     register_aep_cb(aep_cb_func);                                       // haohua
