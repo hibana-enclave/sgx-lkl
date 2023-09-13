@@ -230,20 +230,21 @@ int lthread_run(void)
     int dequeued;
 
     /* use the XMM0 context state in SSA */ 
-    sgxlkl_info("Start lthread modification Nelly\n");
+    // sgxlkl_info("Start lthread modification Nelly\n");
     oe_sgx_td_t* td = oe_sgx_get_td();
-    sgxlkl_info("DEBUG td address: %p\n", td);
+    // sgxlkl_info("DEBUG td address: %p\n", td);
     sgx_tcs_t* tcs = (sgx_tcs_t*)((uint64_t)td - (5 * SSA_PAGE_SIZE));
-    sgxlkl_info("DEBUG tcs address: %p\n", tcs);
+    // sgxlkl_info("DEBUG tcs address: %p\n", tcs);
 
-    /* ------------------------------------------------------------------------------------------- */
-    // sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
+    /* ------------------------------------------------------------------------------------------ */
+    // Enclave Layout: https://github.com/openenclave/openenclave/blob/master/host/README.md
     uint64_t gprssa_address_reserved = (uint64_t)tcs + 2 * SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + SGX_GPRSGX_RESERVED_OFFSET; 
     __asm__ __volatile__(
-        "movq %0, %%gs:24\n" : : "r"(gprssa_address_reserved));
+        "movq %0, %%gs:24\n" 
+        : : "r"(gprssa_address_reserved));
     __asm__ __volatile__(
-            "movq %%gs:24, %%r11\n"
-            "movq $0x0, (%%r11)"
+        "movq %%gs:24, %%rax\n"
+        "movq $0x0, (%%rax)"
         : :); 
     /* ------------------------------------------------------------------------------------------- */
 
