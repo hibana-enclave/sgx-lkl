@@ -155,23 +155,34 @@ void aep_cb_func(void)
     *(aex_counter_ptr + function_id) += 1; 
 }
 
-void output_aex_count_result(char const* const fileName, char const* const aex_count_path){
-    FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
+void output_aex_count_result(char const* const function_name_path, char const* const aex_count_path){
+    FILE *function_name_file = fopen(function_name_path, "r"); /* should check the result */
     FILE *aex_count_file = fopen(aex_count_path, "w");
     
-    if(function_name_file == NULL || aex_count_file == NULL){
-        sgxlkl_host_fail("Can not open function name file or aex count file"); 
+    if(function_name_file == NULL){
+        sgxlkl_host_fail("Can not open function name file !\n"); 
     }
 
-    fprintf(aex_count_file, "func_name\taex\n");
     char line[1024 + 10]; // PATH_MAX is 1024 
     char function_namelist[1024]; // PATH_MAX is 1024. 
     unsigned function_id; 
-    while (fgets(line, sizeof(line), function_name_file)) {
-        sscanf(line, "%s %u", function_namelist, &function_id); 
-        // printf("function name: %s, function id: %d\n", function_namelist, function_id); 
-        fprintf(aex_count_file, "%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+    if (aex_count_file == NULL){
+        printf("\n\n==================================\n"); 
+        printf("func_name\taex\n");
+        while (fgets(line, sizeof(line), function_name_file)) {
+            sscanf(line, "%s %u", function_namelist, &function_id); 
+            printf("%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+        }
+    }else{
+        fprintf(aex_count_file, "\n\n==================================\n");
+        fprintf(aex_count_file, "func_name\taex\n");
+        while (fgets(line, sizeof(line), function_name_file)) {
+            sscanf(line, "%s %u", function_namelist, &function_id); 
+            // printf("function name: %s, function id: %d\n", function_namelist, function_id); 
+            fprintf(aex_count_file, "%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+        }
     }
+
     fclose(function_name_file);
     fclose(aex_count_file); 
 }
@@ -180,7 +191,7 @@ unsigned read_num_of_function(char const* const fileName){
     FILE *function_name_file = fopen(fileName, "r"); /* should check the result */
     
     if(function_name_file == NULL){
-        sgxlkl_host_fail("Can not open function name file or aex count file"); 
+        sgxlkl_host_fail("Can not open function name file !\n"); 
     }   
 
     char line[1024 + 10]; // PATH_MAX is 1024 
