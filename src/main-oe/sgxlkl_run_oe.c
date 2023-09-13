@@ -171,20 +171,22 @@ void output_aex_count_result(char const* const function_name_path, char const* c
         printf("func_name\taex\n");
         while (fgets(line, sizeof(line), function_name_file)) {
             sscanf(line, "%s %u", function_namelist, &function_id); 
-            printf("%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+            printf("%s\t\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
         }
+        printf("\n\n==================================\n"); 
     }else{
         fprintf(aex_count_file, "\n\n==================================\n");
         fprintf(aex_count_file, "func_name\taex\n");
         while (fgets(line, sizeof(line), function_name_file)) {
             sscanf(line, "%s %u", function_namelist, &function_id); 
             // printf("function name: %s, function id: %d\n", function_namelist, function_id); 
-            fprintf(aex_count_file, "%s\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+            fprintf(aex_count_file, "%s\t\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
         }
+        fprintf(aex_count_file, "\n\n==================================\n");
     }
 
-    fclose(function_name_file);
-    fclose(aex_count_file); 
+    if (function_name_file) fclose(function_name_file);
+    if (aex_count_file) fclose(aex_count_file); 
 }
 
 unsigned read_num_of_function(char const* const fileName){
