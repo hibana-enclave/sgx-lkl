@@ -142,6 +142,8 @@ const uint64_t ATTACK_TIMER_RANGE = 1;
 const uint64_t SGX_STEP_INTERVAL = 47; 
 unsigned long long __aex_count = 0; 
 
+char* function_name_path = NULL;
+char* aex_count_path = NULL; 
 unsigned *aex_counter_ptr = NULL; 
 unsigned num_of_function = 0; 
 
