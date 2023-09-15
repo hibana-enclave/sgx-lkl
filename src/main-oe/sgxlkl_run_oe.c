@@ -159,9 +159,8 @@ void aep_cb_func(void)
     }
 }
 
-void output_aex_count_result(char const* const function_name_path, char const* const aex_count_path){
+void output_aex_count_result(char const* const function_name_path){
     FILE *function_name_file = fopen(function_name_path, "r"); /* should check the result */
-    FILE *aex_count_file = fopen(aex_count_path, "w");
     
     if(function_name_file == NULL){
         sgxlkl_host_fail("Can not open function name file !\n"); 
@@ -170,27 +169,15 @@ void output_aex_count_result(char const* const function_name_path, char const* c
     char line[1024 + 10]; // PATH_MAX is 1024 
     char function_namelist[1024]; // PATH_MAX is 1024. 
     unsigned function_id; 
-    if (aex_count_file == NULL){
-        printf("\n\n==================================\n"); 
-        printf("func_name\taex\n");
-        while (fgets(line, sizeof(line), function_name_file)) {
-            sscanf(line, "%s %u", function_namelist, &function_id); 
-            printf("%s\t\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
-        }
-        printf("\n\n==================================\n"); 
-    }else{
-        fprintf(aex_count_file, "\n\n==================================\n");
-        fprintf(aex_count_file, "func_name\taex\n");
-        while (fgets(line, sizeof(line), function_name_file)) {
-            sscanf(line, "%s %u", function_namelist, &function_id); 
-            // printf("function name: %s, function id: %d\n", function_namelist, function_id); 
-            fprintf(aex_count_file, "%s\t\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
-        }
-        fprintf(aex_count_file, "\n\n==================================\n");
+    printf("\n\n==================================\n"); 
+    printf("func_name\taex\n");
+    while (fgets(line, sizeof(line), function_name_file)) {
+        sscanf(line, "%s %u", function_namelist, &function_id); 
+        printf("%s\t\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
     }
+    printf("\n\n==================================\n"); 
 
     if (function_name_file) fclose(function_name_file);
-    if (aex_count_file) fclose(aex_count_file); 
 }
 
 unsigned read_num_of_function(char const* const function_name_path){
@@ -1850,7 +1837,6 @@ int main(int argc, char* argv[], char* envp[])
         {"host-config", required_argument, 0, 'H'},
         {"enclave-config", required_argument, 0, 'c'},
         {"function-name", required_argument, 0, 'n'}, // haohua 
-        {"aex-count-output", required_argument, 0, 'o'}, // haohua 
         {0, 0, 0, 0}};
 
     sgxlkl_host_state.enclave_config = sgxlkl_enclave_config_default;
@@ -1872,9 +1858,6 @@ int main(int argc, char* argv[], char* envp[])
             case 'n':   // haohua  
                 function_name_path = optarg; 
                 break; 
-            case 'o':
-                aex_count_path = optarg; 
-                break;
             case 'e':
                 enclave_image_provided = true;
                 strcpy(libsgxlkl, optarg);
@@ -2228,7 +2211,7 @@ int main(int argc, char* argv[], char* envp[])
     sgx_step_print_aex_count();
 
     // print the aex count result. 
-    output_aex_count_result(function_name_path, aex_count_path); 
+    output_aex_count_result(function_name_path); 
     free(aex_counter_ptr); 
     aex_counter_ptr = NULL; 
 
