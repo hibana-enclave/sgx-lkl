@@ -181,7 +181,6 @@ unsigned long long __aex_count = 0;
 char* function_name_path = NULL;
 char* aex_count_path = NULL; 
 unsigned *aex_counter_ptr = NULL; 
-unsigned num_of_function = 0; 
 
 void aep_cb_func(void)
 {
@@ -190,7 +189,6 @@ void aep_cb_func(void)
         edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
         unsigned function_id = gprsgx.fields.reserved; 
         *(aex_counter_ptr + function_id) += 1; 
-        printf("**DEBUG**: function_id = %u, num_of_function = %u\n", function_id, num_of_function); 
     }
 }
 
@@ -199,14 +197,15 @@ void output_aex_counter_result(char const* const function_name_path){
     
     if(function_name_file == NULL){
         sgxlkl_host_err("Can not open function name file !\n"); 
+        return; 
     }
+
     printf("\n===============================================================\n"); 
-    printf("name\taex\n");  
-    for (int i = 0; i < FuncIdNameMap_internal_capacity; i++){
-        if (FuncIdNameMap_internal[i] == NULL) break; 
-        printf("%s %u\n", FuncIdNameMap_internal[i], aex_counter_ptr[i]); 
+    printf("%50s %10s\n", "function name", "#aex"); 
+    for (int i = 0; i <= FuncIdNameMap_internal_capacity; i++){
+        printf("%50s %10u\n", FuncIdNameMap_internal[i], aex_counter_ptr[i]); 
     }
-    printf("\n===============================================================\n");
+    printf("===============================================================\n");
 
     if (function_name_file) fclose(function_name_file);
 }
@@ -216,16 +215,20 @@ void initialize_aex_counter(char const* const function_name_path){
     
     if(function_name_file == NULL){
         sgxlkl_host_err("Can not open function name file !\n"); 
+        return; 
     }   
-
 
     size_t number_of_lines = 0; 
     int ch; 
     while (EOF != (ch = getc(function_name_file))){
-        if ('\n' == ch) number_of_lines++; 
+        if ('\n' == ch) number_of_lines++;
     }
 
-    FuncIdNameMap_intialize(number_of_lines + 10);
+    size_t counter_size = number_of_lines + 10; 
+    FuncIdNameMap_intialize(counter_size);
+    aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * counter_size);
+    memset(aex_counter_ptr, 0, sizeof(unsigned) * counter_size); 
+    printf("FuncIdNameMap_internal_capacity = %lu\n", FuncIdNameMap_internal_capacity); 
 
     char line[4096]; // PATH_MAX is 1024 
     char function_name[1024 + 10]; // PATH_MAX is 1024. 
@@ -1865,8 +1868,6 @@ int main(int argc, char* argv[], char* envp[])
 #endif // VIRTIO_TEST_HOOK
 #endif // DEBUG
 
-    initialize_aex_counter(function_name_path);
-
     static struct option long_options[] = {
         {"sw-debug", no_argument, 0, SW_DEBUG_MODE},
         {"hw-debug", no_argument, 0, HW_DEBUG_MODE},
@@ -1901,6 +1902,7 @@ int main(int argc, char* argv[], char* envp[])
                 break;
             case 'n':   // haohua  
                 function_name_path = optarg; 
+                initialize_aex_counter(function_name_path);
                 break; 
             case 'e':
                 enclave_image_provided = true;
