@@ -178,6 +178,7 @@ const uint64_t ATTACK_TIMER_RANGE = 1;
 const uint64_t SGX_STEP_INTERVAL = 47; 
 unsigned long long __aex_count = 0; 
 
+unsigned max_function_id = 0; 
 char* function_name_path = NULL;
 char* aex_count_path = NULL; 
 unsigned *aex_counter_ptr = NULL; 
@@ -202,7 +203,7 @@ void output_aex_counter_result(char const* const function_name_path){
 
     printf("\n===============================================================\n"); 
     printf("%50s %10s\n", "function name", "#aex"); 
-    for (int i = 0; i <= FuncIdNameMap_internal_capacity; i++){
+    for (int i = 0; i <= max_function_id; i++){
         printf("%50s %10u\n", FuncIdNameMap_internal[i], aex_counter_ptr[i]); 
     }
     printf("===============================================================\n");
@@ -228,16 +229,21 @@ void initialize_aex_counter(char const* const function_name_path){
     FuncIdNameMap_intialize(counter_size);
     aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * counter_size);
     memset(aex_counter_ptr, 0, sizeof(unsigned) * counter_size); 
-    printf("FuncIdNameMap_internal_capacity = %lu\n", FuncIdNameMap_internal_capacity); 
+    // printf("FuncIdNameMap_internal_capacity = %lu\n", FuncIdNameMap_internal_capacity); 
 
-    char line[4096]; // PATH_MAX is 1024 
+    char line[2048]; // PATH_MAX is 1024 
     char function_name[1024 + 10]; // PATH_MAX is 1024. 
     unsigned function_id; 
 
+    rewind(function_name_file); 
     while (fgets(line, sizeof(line), function_name_file)) {
         sscanf(line, "%s %u", function_name, &function_id); 
         FuncIdNameMap_set_name_at(function_id, function_name); 
+        max_function_id = function_id > max_function_id ? function_id : max_function_id; 
+        // printf("%s\n", FuncIdNameMap_internal[function_id]); 
     }
+
+    // sgxlkl_host_fail("\n[[ DEBUG ]]\n"); 
 
     return; 
 }
