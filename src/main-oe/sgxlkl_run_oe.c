@@ -137,6 +137,41 @@ APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 int __sgx_lkl_app_started = 0; 
 
+/* ------------------------------------------------------------------------------------------------------------------------*/
+char** FuncIdNameMap_internal = NULL;
+size_t FuncIdNameMap_internal_capacity = 0; 
+
+void FuncIdNameMap_intialize(size_t _FuncIdNameMap_internal_capacity){
+    FuncIdNameMap_internal_capacity = _FuncIdNameMap_internal_capacity; 
+    FuncIdNameMap_internal = (char**) malloc(sizeof(char*) * FuncIdNameMap_internal_capacity); 
+    for (size_t i = 0; i < FuncIdNameMap_internal_capacity; i++){
+        FuncIdNameMap_internal[i] = NULL; 
+    }
+}
+
+void FuncIdNameMap_set_name_at(int i, char* name){
+    if (i < 0 || i >= FuncIdNameMap_internal_capacity){ 
+        sgxlkl_host_err("Index is out of range"); 
+    }
+    if (FuncIdNameMap_internal[i]){
+        free(FuncIdNameMap_internal[i]); 
+    }
+    FuncIdNameMap_internal[i] = (char*) malloc(sizeof(char) * (strlen(name) + 1)); 
+    strcpy(FuncIdNameMap_internal[i], name); 
+}
+
+void FuncIdNameMap_free(){
+    if (FuncIdNameMap_internal){
+        for (size_t i = 0; i < FuncIdNameMap_internal_capacity; i++){
+            if (FuncIdNameMap_internal[i]) free(FuncIdNameMap_internal[i]); 
+        }
+        free(FuncIdNameMap_internal); 
+    }
+    FuncIdNameMap_internal = NULL; 
+}
+/* ------------------------------------------------------------------------------------------------------------------------*/
+
+
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 const uint64_t ATTACK_TIMER_BASE_TIME = 500; 
 const uint64_t ATTACK_TIMER_RANGE = 1; 
@@ -159,42 +194,49 @@ void aep_cb_func(void)
     }
 }
 
-void output_aex_count_result(char const* const function_name_path){
+void output_aex_counter_result(char const* const function_name_path){
     FILE *function_name_file = fopen(function_name_path, "r"); /* should check the result */
     
     if(function_name_file == NULL){
-        sgxlkl_host_fail("Can not open function name file !\n"); 
+        sgxlkl_host_err("Can not open function name file !\n"); 
     }
-
-    char line[1024 + 10]; // PATH_MAX is 1024 
-    char function_namelist[1024]; // PATH_MAX is 1024. 
-    unsigned function_id; 
-    printf("\n\n==================================\n"); 
-    printf("func_name\taex\n");
-    while (fgets(line, sizeof(line), function_name_file)) {
-        sscanf(line, "%s %u", function_namelist, &function_id); 
-        printf("%s\t\t%u\n", function_namelist, *(aex_counter_ptr + function_id));
+    printf("\n===============================================================\n"); 
+    printf("name\taex\n");  
+    for (int i = 0; i < FuncIdNameMap_internal_capacity; i++){
+        if (FuncIdNameMap_internal[i] == NULL) break; 
+        printf("%s %u\n", FuncIdNameMap_internal[i], aex_counter_ptr[i]); 
     }
-    printf("\n\n==================================\n"); 
+    printf("\n===============================================================\n");
 
     if (function_name_file) fclose(function_name_file);
 }
 
-unsigned read_num_of_function(char const* const function_name_path){
+void initialize_aex_counter(char const* const function_name_path){
     FILE *function_name_file = fopen(function_name_path, "r"); /* should check the result */
     
     if(function_name_file == NULL){
-        sgxlkl_host_fail("Can not open function name file !\n"); 
+        sgxlkl_host_err("Can not open function name file !\n"); 
     }   
 
-    char line[1024 + 10]; // PATH_MAX is 1024 
-    char function_namelist[1024]; // PATH_MAX is 1024. 
-    unsigned max_function_id; 
-    fgets(line, sizeof(line), function_name_file); 
-    sscanf(line, "%s %u", function_namelist, &max_function_id); 
-    fclose(function_name_file);
 
-    return max_function_id; 
+    size_t number_of_lines = 0; 
+    int ch; 
+    while (EOF != (ch = getc(function_name_file))){
+        if ('\n' == ch) number_of_lines++; 
+    }
+
+    FuncIdNameMap_intialize(number_of_lines + 10);
+
+    char line[4096]; // PATH_MAX is 1024 
+    char function_name[1024 + 10]; // PATH_MAX is 1024. 
+    unsigned function_id; 
+
+    while (fgets(line, sizeof(line), function_name_file)) {
+        sscanf(line, "%s %u", function_name, &function_id); 
+        FuncIdNameMap_set_name_at(function_id, function_name); 
+    }
+
+    return; 
 }
 
 static void version()
@@ -1823,6 +1865,8 @@ int main(int argc, char* argv[], char* envp[])
 #endif // VIRTIO_TEST_HOOK
 #endif // DEBUG
 
+    initialize_aex_counter(function_name_path);
+
     static struct option long_options[] = {
         {"sw-debug", no_argument, 0, SW_DEBUG_MODE},
         {"hw-debug", no_argument, 0, HW_DEBUG_MODE},
@@ -2126,10 +2170,6 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
-    num_of_function = read_num_of_function(function_name_path);
-    aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * num_of_function); 
-    memset(aex_counter_ptr, 0, sizeof(unsigned) * num_of_function); 
-
     // start attacking when creating etrhead 
     // info_event("Registering AEX handler...");                           // haohua          
     register_aep_cb(aep_cb_func);                                       // haohua
@@ -2211,9 +2251,10 @@ int main(int argc, char* argv[], char* envp[])
     sgx_step_print_aex_count();
 
     // print the aex count result. 
-    output_aex_count_result(function_name_path); 
+    output_aex_counter_result(function_name_path); 
     free(aex_counter_ptr); 
     aex_counter_ptr = NULL; 
+    FuncIdNameMap_free(); 
 
     return exit_status;
 }
