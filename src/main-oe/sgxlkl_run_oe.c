@@ -133,7 +133,6 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
-APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 int __sgx_lkl_app_started = 0; 
 
@@ -149,7 +148,7 @@ void FuncIdNameMap_intialize(size_t _FuncIdNameMap_internal_capacity){
     }
 }
 
-void FuncIdNameMap_set_name_at(int i, char* name){
+void FuncIdNameMap_set_name_at(unsigned i, char* name){
     if (i < 0 || i >= FuncIdNameMap_internal_capacity){ 
         sgxlkl_host_err("Index is out of range"); 
     }
