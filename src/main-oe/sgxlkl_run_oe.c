@@ -204,20 +204,19 @@ void output_aex_counter_result(){
 
 void initialize_aex_counter(char const* const function_name_path){
     FILE *function_name_file = fopen(function_name_path, "r"); /* should check the result */
+    if (function_name_file == NULL){
+        sgxlkl_host_fail("Can not open function name file !\n"); 
+    }
+
     char line[2048]; // PATH_MAX is 1024 
     char function_name[1024 + 10]; // PATH_MAX is 1024. 
     unsigned function_id; 
-
-    if(function_name_path == NULL){
-        sgxlkl_host_err("Can not open function name file !\n"); 
-        return; 
-    }   
 
     while (fgets(line, sizeof(line), function_name_file)) {
         sscanf(line, "%s %u", function_name, &function_id); 
         max_function_id = function_id > max_function_id ? function_id : max_function_id; 
     }
-    printf("max_function_id: %d\n", max_function_id); 
+    // printf("max_function_id: %d\n", max_function_id); 
 
     size_t counter_size = max_function_id + 10; 
     FuncIdNameMap_intialize(counter_size);
@@ -1897,7 +1896,7 @@ int main(int argc, char* argv[], char* envp[])
             case 'n':   // haohua  
                 function_name_path = optarg; 
                 initialize_aex_counter(function_name_path);
-                printf("[[ DEBUG ]]: %s\n", function_name_path); 
+                // printf("[[ DEBUG ]]: %s\n", function_name_path); 
                 break; 
             case 'e':
                 enclave_image_provided = true;
