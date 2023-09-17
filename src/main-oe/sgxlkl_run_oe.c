@@ -188,8 +188,8 @@ void aep_cb_func(void)
     if (__sgx_lkl_app_started){
         gprsgx_region_t gprsgx; 
         edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-        unsigned function_id = gprsgx.fields.reserved; 
-        *(aex_counter_ptr + function_id) += 1; 
+        // unsigned function_id = gprsgx.fields.reserved; 
+        // *(aex_counter_ptr + function_id) += 1; 
     }
 }
 
@@ -213,34 +213,30 @@ void output_aex_counter_result(char const* const function_name_path){
 
 void initialize_aex_counter(char const* const function_name_path){
     FILE *function_name_file = fopen(function_name_path, "r"); /* should check the result */
-    
+    char line[2048]; // PATH_MAX is 1024 
+    char function_name[1024 + 10]; // PATH_MAX is 1024. 
+    unsigned function_id; 
+
     if(function_name_file == NULL){
         sgxlkl_host_err("Can not open function name file !\n"); 
         return; 
     }   
 
-    size_t number_of_lines = 0; 
-    int ch; 
-    while (EOF != (ch = getc(function_name_file))){
-        if ('\n' == ch) number_of_lines++;
+    while (fgets(line, sizeof(line), function_name_file)) {
+        sscanf(line, "%s %u", function_name, &function_id); 
+        max_function_id = function_id > max_function_id ? function_id : max_function_id; 
     }
 
-    size_t counter_size = number_of_lines + 10; 
+    size_t counter_size = max_function_id + 10; 
     FuncIdNameMap_intialize(counter_size);
     aex_counter_ptr = (unsigned*) malloc(sizeof(unsigned) * counter_size);
     memset(aex_counter_ptr, 0, sizeof(unsigned) * counter_size); 
-    // printf("FuncIdNameMap_internal_capacity = %lu\n", FuncIdNameMap_internal_capacity); 
-
-    char line[2048]; // PATH_MAX is 1024 
-    char function_name[1024 + 10]; // PATH_MAX is 1024. 
-    unsigned function_id; 
+    printf("FuncIdNameMap_internal_capacity = %lu\n", FuncIdNameMap_internal_capacity); 
 
     rewind(function_name_file); 
     while (fgets(line, sizeof(line), function_name_file)) {
         sscanf(line, "%s %u", function_name, &function_id); 
         FuncIdNameMap_set_name_at(function_id, function_name); 
-        max_function_id = function_id > max_function_id ? function_id : max_function_id; 
-        // printf("%s\n", FuncIdNameMap_internal[function_id]); 
     }
 
     // sgxlkl_host_fail("\n[[ DEBUG ]]\n"); 
