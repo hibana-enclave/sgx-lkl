@@ -156,9 +156,9 @@ APIC_Triggered_State __sgx_step_apic_triggered = STEP_PHASE_0;
 int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-const uint64_t ATTACK_TIMER_BASE_TIME = 500; 
-const uint64_t ATTACK_TIMER_RANGE = 1; 
-const uint64_t SGX_STEP_INTERVAL = 42; 
+const uint64_t ATTACK_TIMER_BASE_TIME = 43; 
+const uint64_t ATTACK_TIMER_RANGE = 800; 
+const uint64_t SGX_STEP_INTERVAL = 43; 
 unsigned long long __aex_count = 0; 
 
 void aep_cb_func(void)
@@ -172,10 +172,10 @@ void aep_cb_func(void)
         	__aex_count += 1; 
         	apic_timer_irq(SGX_STEP_INTERVAL);
         }
-        else if (gprsgx.fields.reserved != 0xDE77 && __ss_irq_count == 1){
-        	/* for example, `movq %%gs:32, %%rax\n` and `movq $0xDE77, (%%rax)` two instructions should be placed at the beginning of a targeted function */ 
-		    sgxlkl_host_fail(" **** [[ SGX-STEP-ERROR ]] The value in SSA's resreved area is not 0xDE77. To fix this error, write 0xDE77 to ssa.reserved (which is in %%gs:32) and increase `attack_timer_base_time`  **** ");
-        }
+        // else if (gprsgx.fields.reserved != 0xDE77 && __ss_irq_count == 1){
+        //	/* for example, `movq %%gs:32, %%rax\n` and `movq $0xDE77, (%%rax)` two instructions should be placed at the beginning of a targeted function */ 
+	//	    sgxlkl_host_fail(" **** [[ SGX-STEP-ERROR ]] The value in SSA's resreved area is not 0xDE77. To fix this error, write 0xDE77 to ssa.reserved (which is in %%gs:32) and increase `attack_timer_base_time`  **** ");
+        //}
     }
 }
 
