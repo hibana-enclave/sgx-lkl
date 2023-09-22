@@ -157,7 +157,7 @@ int __sgx_step_app_terminated = 0; // if the app stops (either normal terminatio
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 const uint64_t SGX_STEP_INTERVAL = 44; 
-const uint64_t ATTACK_TIMER_BASE_TIME = SGX_STEP_INTERVAL; 
+const uint64_t ATTACK_TIMER_BASE_TIME = 50; 
 const uint64_t ATTACK_TIMER_RANGE = 1000; 
 unsigned long long __aex_count = 0; 
 
@@ -2182,6 +2182,7 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
+    info("[[ SGX-STEP-RESULT ]] aex count started from ud2 attack aex = %llu \n", __aex_count);
     info("[[ SGX-STEP-RESULT ]] all is well; irq_count=%d; exiting.. (freq=%lu)", __ss_irq_count, SGX_STEP_INTERVAL);
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();

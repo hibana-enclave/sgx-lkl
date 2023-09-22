@@ -131,7 +131,6 @@ void sgxlkl_host_app_main_end(void)
         __sgx_step_app_terminated = 1;
         // sgxlkl_host_info("[[ SGX-STEP ]] turning off the sgx-step apic attacker at CPU %d...\n", sched_getcpu());
         sgxlkl_host_info("[[ ENC ]] ************** Application End   **************\n");
-        // sgxlkl_host_info("[[ STRONGBOX ]] aex count started from ud2 attack aex = %llu \n", __aex_count);
     }
 } 
 
