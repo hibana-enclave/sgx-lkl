@@ -266,7 +266,7 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
             int hash = (context->r11 * sgx_step_attack_signal_hash_int) % sgx_step_attack_signal_hash_mod; 
             if (hash == sgx_step_attack_signal_hash_target){
                 /* leave the enclave by OCALL and send the first APIC signal in host handler */
-                // sgxlkl_host_sgx_step_attack_setup();
+                sgxlkl_host_sgx_step_attack_setup();
             }else{
                 sgxlkl_fail("Encountered an illegal instruction inside enclave (opcode=0x%x [%s])\n", opcode, "ud2");
             }
