@@ -31,6 +31,12 @@ AEX 	==================> 	Kernel fault handler    ==================>        AEP
 ```
 
 
+
+> TODO: read the code of `sgx-lkl` and `openenclave`, to find the order of `AEP` and `src/enclave/enclave_signal.c`. 
+> 
+
+ 
+
 A better way to distinguish AEXs caused by LAPIC from those by normal execution is 
 shown below. 
 
