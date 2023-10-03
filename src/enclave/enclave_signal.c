@@ -32,7 +32,9 @@
 static const int sgx_step_attack_signal_hash_int = 229; 
 static const int sgx_step_attack_signal_hash_mod = 677;
 //static const int sgx_step_attack_signal_hash_key = 3559; // (0xDE7)
-static const int sgx_step_attack_signal_hash_target = 580; 
+//static const int sgx_step_start_counting_hash_key = 4008; // (0xFA8) 
+static const int sgx_step_attack_signal_hash_target = 580;  
+static const int sgx_step_start_counting_hash_target = 497; 
 // ------------------------------------------------------------------------
 
 /* Mapping between OE and hardware exception */
@@ -139,17 +141,6 @@ static uint64_t sgxlkl_enclave_signal_handler(
     oe_context_t* oe_ctx = exception_record->context;
     uint16_t* instr_addr = ((uint16_t*)exception_record->context->rip);
     uint16_t opcode = instr_addr ? *instr_addr : 0;
-
-    /**
-    * @haohua 
-    * OE will catch seg fault before LKL knowing it. We should turn off 
-    * sgx-step apic timer at this point to make the result more precise. 
-    */
-    if (exception_record->code == OE_EXCEPTION_PAGE_FAULT)
-    {
-        sgxlkl_host_app_main_end(); 
-    }
-    // haohua
 
     /* Emulate illegal instructions in SGX hardware mode */
     if (exception_record->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
@@ -266,8 +257,10 @@ static void _sgxlkl_illegal_instr_hook(uint16_t opcode, oe_context_t* context)
             int hash = (context->r11 * sgx_step_attack_signal_hash_int) % sgx_step_attack_signal_hash_mod; 
             if (hash == sgx_step_attack_signal_hash_target){
                 /* leave the enclave by OCALL and send the first APIC signal in host handler */
-                sgxlkl_host_sgx_step_attack_setup();
-            }else{
+                // sgxlkl_host_sgx_step_attack_setup();
+            }else if (hash == sgx_step_start_counting_hash_target){
+                /* do nothing ~ */   
+	        }else{
                 sgxlkl_fail("Encountered an illegal instruction inside enclave (opcode=0x%x [%s])\n", opcode, "ud2");
             }
             break; 

@@ -14,6 +14,76 @@ I may find out the reasons later if I have time.
 --- 
 
 
+## NOTES FOR ME 
+
+The AEX handler (namely AEP) would be invoked after any hardware exceptions 
+before doing any interrupt handlers (registered to Linux) and ocalls/ecalls. 
+
+A better way to distinguish AEXs caused by LAPIC from those by normal execution is 
+shown below. 
+
+sgx-lkl: `src/main-oe/sgxlkl_run_oe.c`
+
+```c
+else if (grpsgx.fields.reserved == 0xAB11 && apic_read(APIC_TMICT) == 0 && grpsgx.fields.r11 == 0xDE7){ 
+  // NOTE: 
+  //    (1) make sure only set it once ! 
+  //    (2) r11 with a special value 0xDE7 means there is an ud2 instruction.  
+  printf("[[ SGX-STEP ]]: RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%x || APIC_TMCCT = 0x%x \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
+	apic_timer_irq(SGX_STEP_FIRST_ATTACK_VAL);  
+}
+```
+
+nbench: `nbench1.c`
+
+```c
+void __sgx_step_configure_attack(){
+	static int attacked = 0; 
+	if (attacked) return; 
+
+    long long context_r11;
+		__asm__ __volatile__(
+        	"movq %%gs:32, %%r11\n"
+        	"movq $0xAB11, (%%r11)\n"
+		: :); 
+		__asm__ __volatile__(
+			"movq %%r11, %0\n\t"
+			"movq $0xDE7, %%r11\n\t"
+			: "=r"(context_r11)
+			:
+			: "r11"
+		);
+		__asm__ __volatile__(
+			"ud2\n\t");
+		__asm__ __volatile__(
+			"movq %0, %%r11\n\t"
+			:
+			: "m"(context_r11)
+			: "r11"
+		);
+	attacked = 1; 
+}
+
+
+void __start_aex_counter(){
+	static int counted = 0; 
+	if (counted) return; 
+	__asm__ __volatile__(
+        	"movq %%gs:32, %%r11\n"
+        	"movq $0xAB22, (%%r11)\n"
+	: :); 
+	counted = 1; 
+}
+```
+
+We should tune the value of `SGX_STEP_FIRST_ATTACK_VAL` such that the first interrupt arrived when 
+`ssa.reserved == AB22`. 
+
+- Case 1: `__ss_irq_count = 0`, `SGX_STEP_FIRST_ATTACK_VAL` is too small
+- Case 2: `__ss_irq_count = 1`, `SGX_STEP_FIRST_ATTACK_VAL` is a good value !!
+
+
+
 ## Demo 
 
 ```
