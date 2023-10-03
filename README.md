@@ -19,6 +19,18 @@ I may find out the reasons later if I have time.
 The AEX handler (namely AEP) would be invoked after any hardware exceptions 
 before doing any interrupt handlers (registered to Linux) and ocalls/ecalls. 
 
+(??? could be found in the paper *smashEX* ???)
+
+```
+AEX 	==================> 	Kernel fault handler    ==================>        AEP
+									 ||												/\
+									 ||												||
+									 ||											    ||		
+									 ================>	uRTS signal handler  ========
+(set `RIP->AEP`)									 
+```
+
+
 A better way to distinguish AEXs caused by LAPIC from those by normal execution is 
 shown below. 
 
