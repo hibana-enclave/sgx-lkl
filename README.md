@@ -46,7 +46,8 @@ sgx-lkl: `src/main-oe/sgxlkl_run_oe.c`
 else if (grpsgx.fields.reserved == 0xAB11 && apic_read(APIC_TMICT) == 0 && grpsgx.fields.r11 == 0xDE7){ 
   // NOTE: 
   //    (1) make sure only set it once ! 
-  //    (2) r11 with a special value 0xDE7 means there is an ud2 instruction.  
+  //    (2) r11 with a special value 0xDE7 means there is an ud2 instruction.
+  // 		`grpsgx.fields.r11 == 0xDE7` could be refered to Shujie Cui's sgx-lkl-legacy version  
   printf("[[ SGX-STEP ]]: RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%x || APIC_TMCCT = 0x%x \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
 	apic_timer_irq(SGX_STEP_FIRST_ATTACK_VAL);  
 }
