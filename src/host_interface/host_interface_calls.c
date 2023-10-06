@@ -31,7 +31,7 @@ extern int __sgx_step_app_terminated;
 extern unsigned long long __aex_count; 
 extern uint64_t ATTACK_TIMER_BASE_TIME; 
 extern uint64_t ATTACK_TIMER_RANGE; 
-
+extern void irq_handler(uint8_t * rsp);
 
 extern void sgx_step_attack_signal_timer_handler(int signum); 
 
@@ -124,6 +124,7 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 void sgxlkl_host_app_main_end(void)
 {
     if (!__sgx_step_app_terminated){
+	    apic_timer_deadline();
         sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
         __sgx_step_app_terminated = 1;
         printf("[[ ENC ]] ************** Application End   **************\n");
@@ -135,9 +136,6 @@ void sgxlkl_host_app_main_start(void)
     __sgx_step_app_terminated = 0;
     __sgx_lkl_aex_cnt_aux = 0;
     printf("[[ ENC ]] ************** Application Start **************\n");    
-    idt_t idt = {0};
-    map_idt(&idt);
-    install_kernel_irq_handler(&idt, __ss_irq_handler, IRQ_VECTOR); // FIXME: the installation of kernel irq handler may freeze the kernel?
     apic_timer_oneshot(IRQ_VECTOR);
 }
 
@@ -146,6 +144,7 @@ void sgxlkl_host_sgx_step_attack_setup(void)
 {
     // if () sgxlkl_host_fail("Don't issue ud2 more thane once...."); 
     // __aex_count = 0; 
+    printf("Hello World!\n");
 }
 
 void sgxlkl_host_hw_cpuid(
