@@ -156,8 +156,8 @@ int __sgx_step_app_terminated = 1; // if the app stops (either normal terminatio
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 #define SGX_STEP_TIMER_INTERVAL 42
-#define SGX_STEP_FIRST_ATTACK_VAL 90
-#define SGX_STEP_FIRST_ATTACK_RANGE 10000
+#define SGX_STEP_FIRST_ATTACK_VAL 100
+#define SGX_STEP_FIRST_ATTACK_RANGE 50000
 
 unsigned long long __aex_count = 0; 
 int __attacked = 0; 
@@ -178,7 +178,7 @@ void aep_cb_func(void)
 	    unsigned attack_delay = SGX_STEP_FIRST_ATTACK_VAL + rand() % SGX_STEP_FIRST_ATTACK_RANGE; 
 	    apic_timer_irq(attack_delay); 
     }
-    else if (__attacked == 1 && apic_read(APIC_TMICT) != 0){
+    else if (__attacked == 1 && apic_read(APIC_TMICT) != 0 && apic_read(APIC_TMCCT) == 0){
             // printf("[[ SGX-STEP ]]:|| {{ CONTINUE }} RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%x || APIC_TMCCT = 0x%x \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
 	    __aex_count++;
 	    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);  	
