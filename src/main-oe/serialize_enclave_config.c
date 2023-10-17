@@ -449,7 +449,7 @@ void serialize_enclave_config(
     // Catch modifications to sgxlkl_enclave_config_t early. If this fails,
     // the code above/below needs adjusting for the added/removed settings.
     _Static_assert(
-        sizeof(sgxlkl_enclave_config_t) == 464,
+        sizeof(sgxlkl_enclave_config_t) == 480,
         "sgxlkl_enclave_config_t size has changed");
 
 #define FPFBOOL(N) root->objects[cnt++] = encode_boolean(#N, config->N)
@@ -484,6 +484,9 @@ void serialize_enclave_config(
     FPFU64(espins);
     FPFU64(esleep);
     FPFU64(ethreads);
+    FPFU64(sgxstep_base);
+    FPFU64(sgxstep_range);
+
     root->objects[cnt++] = encode_clock_res("clock_res", config->clock_res);
 
     FPFBOOL(fsgsbase);

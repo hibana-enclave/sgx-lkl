@@ -394,6 +394,18 @@
           "default": 16000,
           "overridable": "SGXLKL_ESLEEP"
         },
+        "sgxstep_base": {
+          "$ref": "#/definitions/safe_size_t",
+          "description": "the time before the first attack triggered by sgx-step",
+          "default": 100,
+          "overridable": "SGXSTEP_BASE"
+        },
+        "sgxstep_range": {
+          "$ref": "#/definitions/safe_size_t",
+          "description": "the time (varies in a range) before the first attack triggered by sgx-step",
+          "default": 50000,
+          "overridable": "SGXSTEP_RANGE"
+        },
         "clock_res": {
           "type": "array",
           "description": "",

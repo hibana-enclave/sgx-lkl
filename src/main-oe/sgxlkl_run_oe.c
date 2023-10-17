@@ -156,14 +156,16 @@ int __sgx_step_app_terminated = 1; // if the app stops (either normal terminatio
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
 #define SGX_STEP_TIMER_INTERVAL 42
-#define SGX_STEP_FIRST_ATTACK_VAL 100
-#define SGX_STEP_FIRST_ATTACK_RANGE 50000
+long unsigned SGX_STEP_FIRST_ATTACK_VAL = 0; 
+long unsigned SGX_STEP_FIRST_ATTACK_RANGE = 0; 
 
 unsigned long long __aex_count = 0; 
 int __attacked = 0; 
 
 void aep_cb_func(void)
 {
+    // printf("[[ SGX-STEP ]] sgxstep-first-attack-val = %lu, sgxstep-first-attack-range = %lu\n", SGX_STEP_FIRST_ATTACK_VAL, SGX_STEP_FIRST_ATTACK_RANGE); 
+
     gprsgx_region_t grpsgx; 
     edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t));  
 
@@ -1582,6 +1584,12 @@ void override_enclave_config(
     if (sgxlkl_config_overridden(SGXLKL_ESLEEP))
         econf->esleep = sgxlkl_config_uint64(SGXLKL_ESLEEP);
 
+    if (sgxlkl_config_overridden(SGXSTEP_BASE))
+        econf->sgxstep_base = sgxlkl_config_uint64(SGXSTEP_BASE);
+
+    if (sgxlkl_config_overridden(SGXSTEP_RANGE))
+        econf->sgxstep_range = sgxlkl_config_uint64(SGXSTEP_RANGE);
+    
     if (sgxlkl_config_overridden(SGXLKL_VERBOSE))
         econf->verbose = sgxlkl_config_bool(SGXLKL_VERBOSE);
 
@@ -2110,6 +2118,10 @@ int main(int argc, char* argv[], char* envp[])
     pthread_cond_init(&terminating_ethread_exited_cv, NULL);
 
     ethread_args_t ethreads_args[econf->ethreads];
+
+    // sgxstep  
+    SGX_STEP_FIRST_ATTACK_VAL = sgxlkl_host_state.enclave_config.sgxstep_base;
+    SGX_STEP_FIRST_ATTACK_RANGE = sgxlkl_host_state.enclave_config.sgxstep_range;
 
     // start attacking when creating etrhead 
     attacker_config_runtime();                                          // haohua   
