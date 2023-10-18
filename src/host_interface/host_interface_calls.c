@@ -124,7 +124,7 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
 void sgxlkl_host_app_main_end(void)
 {
     if (!__sgx_step_app_terminated){
-	    apic_timer_deadline(IRQ_VECTOR);
+	    apic_timer_deadline();
         sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
         __sgx_step_app_terminated = 1;
         printf("[[ ENC ]] ************** Application End   **************\n");
