@@ -13,6 +13,11 @@ I may find out the reasons later if I have time.
 
 --- 
 
+## SSA region 
+
+In this branch, sgx-lkl's second stack (namely SSA) will start from the beginning of XSAVE area.  
+
+Read the source code https://github.com/hibana-enclave/sgx-lkl/blob/attack-ssa-xmm/src/sched/lthread.c#L241
 
 ## NOTES FOR ME 
 
