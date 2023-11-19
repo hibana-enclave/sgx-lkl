@@ -13,6 +13,10 @@ I may find out the reasons later if I have time.
 
 --- 
 
+## SSA Region
+
+In this repository, the gpr area will be used as the second stack (the addresses )
+
 
 ## NOTES FOR ME 
 
