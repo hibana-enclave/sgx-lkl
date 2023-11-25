@@ -238,9 +238,21 @@ int lthread_run(void)
 
     /* ------------------------------------------------------------------------------------------ */
     // Enclave Layout: https://github.com/openenclave/openenclave/blob/master/host/README.md
-    sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2*4096 - 184 + 1); // add 1 to mismatch a slot for a whole pointer. 
+    sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2*SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + 1); // add 1 to mismatch a slot for a whole pointer. 
     sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
-    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(gprssa_address));     
+    __asm__ __volatile__(
+        "movq %0, %%gs:24\n" : : "r"(gprssa_address)
+    );     
+    /* ------------------------------------------------------------------------------------------- */
+    sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
+    uint64_t gprssa_address_reserved = (uint64_t)tcs + 2*SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + SGX_GPRSGX_RESERVED_OFFSET; 
+    __asm__ __volatile__(
+        "movq %0, %%gs:32\n" : : "r"(gprssa_address_reserved)
+    );
+    __asm__ __volatile__(
+        "movq %%gs:32, %%rax\n"
+        "movq $0x0, (%%rax)" : :); 
+    /* ------------------------------------------------------------------------------------------- */
 
     /* Check if the scheduler was initialized. */
     if (sched == NULL)
