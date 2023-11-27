@@ -238,7 +238,7 @@ int lthread_run(void)
 
     /* ------------------------------------------------------------------------------------------ */
     // Enclave Layout: https://github.com/openenclave/openenclave/blob/master/host/README.md
-    sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2*SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + 1); // add 1 to mismatch a slot for a whole pointer. 
+    sgx_ssa_gpr_t* gprssa_address = (sgx_ssa_gpr_t*)((uint64_t)tcs + 2*SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + 2); // haohua: add a 16-bit offset 
     sgxlkl_info("DEBUG ssa gpr address: %p\n", gprssa_address);
     __asm__ __volatile__(
         "movq %0, %%gs:24\n" : : "r"(gprssa_address)
