@@ -155,7 +155,7 @@ void attacker_config_runtime(void)
 int __sgx_step_app_terminated = 1; // if the app stops (either normal termination and seg fault)
 
 /* Called before resuming the enclave after an Asynchronous Enclave eXit. haohua */
-#define SGX_STEP_TIMER_INTERVAL 41
+#define SGX_STEP_TIMER_INTERVAL 42
 long unsigned SGX_STEP_FIRST_ATTACK_VAL = 0; 
 long unsigned SGX_STEP_FIRST_ATTACK_RANGE = 0; 
 
@@ -168,7 +168,6 @@ void aep_cb_func(void)
 {
     // printf("[[ SGX-STEP ]] sgxstep-first-attack-val = %lu, sgxstep-first-attack-range = %lu\n", SGX_STEP_FIRST_ATTACK_VAL, SGX_STEP_FIRST_ATTACK_RANGE); 
     
-
     gprsgx_region_t grpsgx; 
     edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t));  
     // printf("[[ SGX-STEP ]]: ssa reseved = 0x%x\n", grpsgx.fields.reserved == 0xfff);
@@ -186,7 +185,7 @@ void aep_cb_func(void)
 	    apic_timer_irq(attack_delay); 
     }
     else if (__attacked == 1 && apic_read(APIC_TMICT) != 0){
-        printf("[[ SGX-STEP ]]:|| {{ CONTINUE }} RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%u || APIC_TMCCT = 0x%u \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
+            printf("[[ SGX-STEP ]]:|| {{ CONTINUE }} RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%u || APIC_TMCCT = 0x%u \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
 	    __aex_count++;
 	    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);  	
     }
