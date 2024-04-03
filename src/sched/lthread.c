@@ -221,6 +221,17 @@ void lthread_terminate_this_scheduler(void)
     lt->attr.state |= BIT(LT_ST_TERMINATE);
 }
 
+int support_avx(){
+    unsigned int EAX, EBX, ECX, EDX; 
+    __asm__ __volatile__(
+        "cpuid\n" 
+        : "=a"(EAX), "=b"(EBX), "=c"(ECX), "=d"(EDX)
+        : "a" (1), "c"(0));
+    if ((ECX >> 28) & 1) return 1;
+    return 0; 
+}
+
+
 int lthread_run(void)
 {
     const struct lthread_sched* const sched = lthread_get_sched();
@@ -238,12 +249,52 @@ int lthread_run(void)
 
     /* ------------------------------------------------------------------------------------------ */
     // Enclave Layout: https://github.com/openenclave/openenclave/blob/master/host/README.md
-    uint64_t xsave_xmm0_address = (uint64_t)tcs + 1 * SSA_PAGE_SIZE + SSA_XSAVE_XMM0_OFFSET + 1; // 
-    sgxlkl_info("DEBUG ssa xmm state address: %p\n", xsave_xmm0_address);
-    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_xmm0_address));
-    __asm__ __volatile__(
-            "vzeroall \n"
-        : : :);
+#define SSA_XSAVE_2ND_STACK_OFFSET 576
+    uint64_t ssa_stack_addr = (uint64_t)tcs + 1 * SSA_PAGE_SIZE + SSA_XSAVE_2ND_STACK_OFFSET + 1;
+    sgxlkl_info("DEBUG ssa xmm state address: %p\n", ssa_stack_addr);
+    __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(ssa_stack_addr));
+
+    if (support_avx()){
+        __asm__ __volatile__(
+            // https://www.officedaytime.com/simd512e/simdimg/pcmp.php?f=vpcmpeqd For each BYTE, if (1) == (2) set 1, else set 0
+            "vpcmpeqd %%ymm0, %%ymm0, %%ymm0\n"
+            "vpcmpeqd %%ymm1, %%ymm1, %%ymm1\n"
+            "vpcmpeqd %%ymm2, %%ymm2, %%ymm2\n"
+            "vpcmpeqd %%ymm3, %%ymm3, %%ymm3\n"
+            "vpcmpeqd %%ymm4, %%ymm4, %%ymm4\n"
+            "vpcmpeqd %%ymm5, %%ymm5, %%ymm5\n"
+            "vpcmpeqd %%ymm6, %%ymm6, %%ymm6\n"
+            "vpcmpeqd %%ymm7, %%ymm7, %%ymm7\n"
+            "vpcmpeqd %%ymm8, %%ymm8, %%ymm8\n"
+            "vpcmpeqd %%ymm9, %%ymm9, %%ymm9\n"
+            "vpcmpeqd %%ymm10, %%ymm10, %%ymm10\n"
+            "vpcmpeqd %%ymm11, %%ymm11, %%ymm11\n"
+            "vpcmpeqd %%ymm12, %%ymm12, %%ymm12\n"
+            "vpcmpeqd %%ymm13, %%ymm13, %%ymm13\n"
+            "vpcmpeqd %%ymm14, %%ymm14, %%ymm14\n"
+            "vpcmpeqd %%ymm15, %%ymm15, %%ymm15\n"
+            : : :);
+    }else{
+        __asm__ __volatile__(
+            "PCMPEQB    %%xmm0, %%xmm0\n"
+            "PCMPEQB    %%xmm1, %%xmm1\n"
+            "PCMPEQB    %%xmm2, %%xmm2\n"
+            "PCMPEQB    %%xmm3, %%xmm3\n"
+            "PCMPEQB    %%xmm4, %%xmm4\n"
+            "PCMPEQB    %%xmm5, %%xmm5\n"
+            "PCMPEQB    %%xmm6, %%xmm6\n"
+            "PCMPEQB    %%xmm7, %%xmm7\n"
+            "PCMPEQB    %%xmm8, %%xmm8\n"
+            "PCMPEQB    %%xmm9, %%xmm9\n"
+            "PCMPEQB    %%xmm10, %%xmm10\n"
+            "PCMPEQB    %%xmm11, %%xmm11\n"
+            "PCMPEQB    %%xmm12, %%xmm12\n"
+            "PCMPEQB    %%xmm13, %%xmm13\n"
+            "PCMPEQB    %%xmm14, %%xmm14\n"
+            "PCMPEQB    %%xmm15, %%xmm15\n"
+            : : :);
+    }
+    
     /* ------------------------------------------------------------------------------------------- */
     sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
     uint64_t gprssa_address_reserved = (uint64_t)tcs + 2 * SSA_PAGE_SIZE - SGX_GPRSGX_SIZE + SGX_GPRSGX_RESERVED_OFFSET; 
