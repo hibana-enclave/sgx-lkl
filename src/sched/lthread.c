@@ -242,22 +242,7 @@ int lthread_run(void)
     sgxlkl_info("DEBUG ssa xmm state address: %p\n", xsave_xmm0_address);
     __asm__ __volatile__("movq %0, %%gs:24\n" : : "r"(xsave_xmm0_address));
     __asm__ __volatile__(
-            "PCMPEQB    %%xmm0, %%xmm0\n\t" // the CPU on NUC only support SSE instruction set. 
-            "MOVDQA     %%xmm0, %%xmm1 \n"        
-            "MOVDQA     %%xmm0, %%xmm2 \n"
-            "MOVDQA     %%xmm0, %%xmm3 \n"
-            "MOVDQA     %%xmm0, %%xmm4 \n"
-            "MOVDQA     %%xmm0, %%xmm5 \n"
-            "MOVDQA     %%xmm0, %%xmm6 \n"
-            "MOVDQA     %%xmm0, %%xmm7 \n"
-            "MOVDQA     %%xmm0, %%xmm8 \n"
-            "MOVDQA     %%xmm0, %%xmm9 \n"
-            "MOVDQA     %%xmm0, %%xmm10 \n"
-            "MOVDQA     %%xmm0, %%xmm11 \n"
-            "MOVDQA     %%xmm0, %%xmm12 \n"
-            "MOVDQA     %%xmm0, %%xmm13 \n"
-            "MOVDQA     %%xmm0, %%xmm14 \n"
-            "MOVDQA     %%xmm0, %%xmm15 \n" 
+            "vzeroall \n"
         : : :);
     /* ------------------------------------------------------------------------------------------- */
     sgxlkl_info("assigning SSA's reserved area to gs local thread data.\n");
