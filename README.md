@@ -245,9 +245,12 @@ sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 > **Note**: If ansible shows the following error, add the APT key for Microsoft packages
 > `TASK [linux/common : Add APT repository key]`
 `fatal: [localhost]: FAILED! => {"attempts": 10, "changed": false, "msg": "Failed to download key at https://packages.microsoft.com/keys/microsoft.asc: Request failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:852)>"}`
+> 
 > For example, run the command in the terminal 
+
 > `curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -` 
-> and `sudo apt update`
+> 
+> `sudo apt update`
 
 
 
