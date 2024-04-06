@@ -242,6 +242,14 @@ sudo ansible-playbook scripts/ansible/oe-contributors-setup.yml
 
 > **Note**: from linux kernel 5.11, the SGX patches are merged into the mainline kernel. It is recommended to use in-kernel driver `sgx_enclave` in newer Ubuntu distribution. The out-of-tree sgx driver `isgx` and dcap driver `intel_sgx` will be deprecated. As the testing operating system is Ubuntu 18, the dcap driver or out-of-tree driver will be used here. 
 
+> **Note**: If ansible shows the following error, add the APT key for Microsoft packages
+> `TASK [linux/common : Add APT repository key]`
+`fatal: [localhost]: FAILED! => {"attempts": 10, "changed": false, "msg": "Failed to download key at https://packages.microsoft.com/keys/microsoft.asc: Request failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:852)>"}`
+> For example, run the command in the terminal 
+> `curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -` 
+> and `sudo apt update`
+
+
 
 ### 4. Build SGX-LKL in the source tree:
 
