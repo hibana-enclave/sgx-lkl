@@ -164,32 +164,33 @@ int __attacked = 0;
 
 extern int __sgx_step_app_terminated; 
 
+#define SSA_XSAVE_LEGACY_SIZE 512
+#define SGX_TCS_OSSA_OFFSET         16
+#define SGX_TCS_CSSA_OFFSET         24
+#define SSA_XSAVE_XMM0_OFFSET 160
+#define SSA_XSAVE_XMM0_SIZE 16
+
 void aep_cb_func(void)
 {
-    // printf("[[ SGX-STEP ]] sgxstep-first-attack-val = %lu, sgxstep-first-attack-range = %lu\n", SGX_STEP_FIRST_ATTACK_VAL, SGX_STEP_FIRST_ATTACK_RANGE); 
+    // Read the pdf "Exception Handling in Intel® Software Guard Extensions (Intel® SGX) Applications" 
+    uint8_t bytes[SSA_XSAVE_XMM0_SIZE] = {0};
+    uint64_t ossa = 0x0;
+    void *tcs_addr = sgx_get_tcs();
+    edbgrd(tcs_addr + SGX_TCS_OSSA_OFFSET, &ossa, sizeof(ossa));
+    // NOTE: a SSA frame holds the context for an enclave thread, 
+    //       therefore a multi-thread application may contains more than one SSA frame. 
+    //       OSSA points to the offset of SSA region (the starting offset)
+    //       CSSA is the index of the current SSA frame. 
+    // For now, we only test single-thread enclave application, we can safely assume 
+    // CSSA is always one for now. 
+    edbgrd(get_enclave_base() + ossa + SSA_XSAVE_XMM0_OFFSET, bytes, SSA_XSAVE_XMM0_SIZE);
     
-
-    gprsgx_region_t grpsgx; 
-    edbgrd(get_enclave_ssa_gprsgx_adrs(), &grpsgx, sizeof(gprsgx_region_t));  
-    // printf("[[ SGX-STEP ]]: ssa reseved = 0x%x\n", grpsgx.fields.reserved == 0xfff);
-
-    if (grpsgx.fields.reserved == 0x0 || grpsgx.fields.reserved == 0xfff){
-        //if (grpsgx.fields.reserved == 0xfff) printf("[[ SGX-STEP ]]: {{ STOP }}\n");
-	    return; 
-    }
-    else if (__attacked == 0 && grpsgx.fields.reserved == 0xAB11 && apic_read(APIC_TMICT) == 0 && grpsgx.fields.r11 == 0xDE7){ // NOTE: (1) make sure only set it once !  (2) r11 with a special value is also ok. 
-	    printf("[[ SGX-STEP ]]:|| {{ FIRST ATTACK  }} || RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%u || APIC_TMCCT = 0x%u \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
-	    __attacked = 1;
-	    srand(time(NULL)); 
-	    unsigned attack_delay = SGX_STEP_FIRST_ATTACK_VAL + rand() % SGX_STEP_FIRST_ATTACK_RANGE; 
-	    printf("[[ SGX-STEP ]]: attack dealy = %u\n", attack_delay); 
-	    apic_timer_irq(attack_delay); 
-    }
-    else if (__attacked == 1 && apic_read(APIC_TMICT) != 0){
-        printf("[[ SGX-STEP ]]:|| {{ CONTINUE }} RIP = 0x%lx || ssa.reserved = 0x%x || APIC_TMICT = 0x%u || APIC_TMCCT = 0x%u \n", grpsgx.fields.rip, grpsgx.fields.reserved, apic_read(APIC_TMICT), apic_read(APIC_TMCCT)); 
-	    __aex_count++;
-	    apic_timer_irq(SGX_STEP_TIMER_INTERVAL);  	
-    }
+    printf("XMM0 = ");
+	for(unsigned int i = 0; i < SSA_XSAVE_XMM0_SIZE; i++)
+	{
+		printf("%02x", bytes[i]);
+	}
+	printf("\n");
 }
 
 
@@ -2208,7 +2209,6 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
-    info("[[ SGX-STEP-RESULT ]] irq_0xde77=%llu  (APIC_FRE=%d)", __aex_count, SGX_STEP_TIMER_INTERVAL); 
     sgx_lkl_print_app_main_aex_count(); 
     sgx_step_print_aex_count();
 
