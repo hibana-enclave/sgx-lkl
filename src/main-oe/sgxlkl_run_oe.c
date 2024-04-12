@@ -47,6 +47,16 @@
 #include "host/host_device_ifc.h"
 #include "host/sgxlkl_u.h"
 
+#include <sys/syscall.h>
+
+#include "libsgxstep/enclave.h"
+#include "libsgxstep/debug.h"
+#include "libsgxstep/pt.h"
+#include "libsgxstep/config.h"
+#include "libsgxstep/apic.h"
+#include "libsgxstep/sched.h"
+#include "libsgxstep/idt.h"
+
 #if defined(DEBUG)
 #define BUILD_INFO "[DEBUG build (-O0)]"
 #elif defined(SGXLKL_RELEASE)
@@ -121,6 +131,18 @@ static oe_enclave_t* sgxlkl_enclave = NULL;
 #endif
 
 /**************************************************************************************************************************/
+int __sgx_step_app_terminated = 0; // if the app stops (either normal termination and seg fault)
+int __sgx_lkl_app_started = 0; 
+unsigned long long __aex_count = 0; 
+
+void aep_cb_func(void)
+{
+    if (__sgx_lkl_app_started){
+        gprsgx_region_t gprsgx; 
+        edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
+        unsigned function_id = gprsgx.fields.reserved; 
+    }
+}
 
 static void version()
 {
@@ -2046,6 +2068,10 @@ int main(int argc, char* argv[], char* envp[])
 
     ethread_args_t ethreads_args[econf->ethreads];
 
+    // start attacking when creating etrhead 
+    // info_event("Registering AEX handler...");                        // haohua          
+    register_aep_cb(aep_cb_func);                                       // haohua
+
     for (int i = 0; i < econf->ethreads; i++)
     {
         pthread_attr_init(&eattr);
@@ -2118,5 +2144,8 @@ int main(int argc, char* argv[], char* envp[])
         "SGX-LKL-OE exit: exited_ethread_count=%i exit_status=%i\n",
         exited_ethread_count,
         exit_status);
+
+    info("[[ SGX-STEP-RESULT ]] all is well; irq_count=%d; exiting.. (freq=%lu)", __ss_irq_count, SGX_STEP_INTERVAL);
+
     return exit_status;
 }

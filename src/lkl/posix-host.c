@@ -92,6 +92,8 @@ static void terminate(int exit_status, int received_signal)
         }
     }
 
+    sgxlkl_host_app_main_end();
+
     LKL_TRACE(
         "Shutting down SGX-LKL (exit_status=%i received_signal=%i)\n",
         exit_status,

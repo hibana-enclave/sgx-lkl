@@ -8,6 +8,28 @@
 #include <stdio.h>
 #include <sys/mman.h>
 
+#include <string.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <sys/time.h>
+
+
+#include "libsgxstep/enclave.h"
+#include "libsgxstep/debug.h"
+#include "libsgxstep/pt.h"
+#include "libsgxstep/config.h"
+#include "libsgxstep/apic.h"
+#include "libsgxstep/sched.h"
+#include "libsgxstep/idt.h"
+
+int sched_getcpu(void); 
+
+extern unsigned int __sgx_lkl_aex_cnt_aux; 
+extern unsigned int sgx_lkl_aex_cnt; 
+extern int __sgx_step_app_terminated; 
+extern int __sgx_lkl_app_started; 
+extern unsigned long long __aex_count; 
+
 /* Function to register the enclaves signal handler */
 extern void register_enclave_signal_handler(void* signal_handler);
 
@@ -94,6 +116,24 @@ int sgxlkl_host_syscall_mprotect(void* addr, size_t len, int prot)
     return mprotect(addr, len, prot);
 }
 
+void sgxlkl_host_app_main_end(void)
+{
+    if (!__sgx_step_app_terminated){
+        sgx_lkl_aex_cnt = __sgx_lkl_aex_cnt_aux; 
+        __sgx_step_app_terminated = 1;
+        __sgx_lkl_app_started = 0; 
+        printf("[[ ENC ]] ************** Application End   **************\n");
+    }
+} 
+
+void sgxlkl_host_app_main_start(void)
+{
+    __sgx_step_app_terminated = 0;
+    __sgx_lkl_aex_cnt_aux = 0;
+    __sgx_lkl_app_started = 1; 
+    printf("[[ ENC ]] ************** Application Start **************\n");
+}
+
 void sgxlkl_host_hw_cpuid(
     uint32_t leaf,
     uint32_t subleaf,
@@ -102,6 +142,7 @@ void sgxlkl_host_hw_cpuid(
     uint32_t* ecx,
     uint32_t* edx)
 {
+
     if (eax)
         *eax = 0;
 
