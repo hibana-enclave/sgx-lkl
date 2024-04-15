@@ -140,7 +140,6 @@ void aep_cb_func(void)
     if (__sgx_lkl_app_started){
         gprsgx_region_t gprsgx; 
         edbgrd(get_enclave_ssa_gprsgx_adrs(), &gprsgx, sizeof(gprsgx_region_t)); 
-        unsigned function_id = gprsgx.fields.reserved; 
     }
 }
 
