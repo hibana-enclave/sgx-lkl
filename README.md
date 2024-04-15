@@ -129,9 +129,9 @@ cd sgx-lkl
 git submodule init
 git submodule update --progress
 # sgx-lkl-musl
-git clone --branch haohua https://github.com/hibana-enclave/sgx-lkl-musl
+git clone --branch simple_aep https://github.com/hibana-enclave/sgx-lkl-musl
 # openenclave
-git clone --branch haohua --recursive https://github.com/hibana-enclave/openenclave 
+git clone --branch simple_aep --recursive https://github.com/hibana-enclave/openenclave 
 # sgx-step 
 git clone --branch haohua https://github.com/hibana-enclave/sgx-step
 ```
