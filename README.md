@@ -637,5 +637,31 @@ cd sgx-lkl/sgx-step/kernal
 make clean load 
 ```
 
-2024 12 Apr 
+### cannot update apt cache 
+
+Openapi 
+
+```
+W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: https://apt.repos.intel.com/oneapi all InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY BAC6F0C353D04109
+```
+
+The solution: <https://community.intel.com/t5/oneAPI-Registration-Download/The-GPG-PUB-KEY-INTEL-SW-PRODUCTS-PUB-expired/m-p/1529230>
+
+For Openapi
+
+```shell
+wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB  | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+```
+
+Intel SGX
+
+```
+W: An error occurred during the signature verification. The repository is not updated and the previous index files will be used. GPG error: https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic InRelease: The following signatures couldn't be verified because the public key is not available: NO_PUBKEY E5C7F0FA1C6C6C3C
+```
+
+The solution: <https://askubuntu.com/questions/13065/how-do-i-fix-the-gpg-error-no-pubkey>
+
+```shell
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E5C7F0FA1C6C6C3C
+```
 
