@@ -2144,7 +2144,7 @@ int main(int argc, char* argv[], char* envp[])
         exited_ethread_count,
         exit_status);
 
-    info("[[ SGX-STEP-RESULT ]] all is well; irq_count=%d; exiting.. (freq=%lu)", __ss_irq_count, SGX_STEP_INTERVAL);
+    info("[[ SGX-STEP-RESULT ]] all is well; irq_count=%d; exiting.. ", __ss_irq_count);
 
     return exit_status;
 }
